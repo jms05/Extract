@@ -1,7 +1,7 @@
 ---
 title: Extração Conheciento Bases Dados Biológicas
-   Bipolar disorder and response to lithium
-author: "Catarina S. pg32934 | Davide L. pg31552 | João S. a72023 | José M. pg32943 | Marta M. pg32847"
+   <br />Bipolar Disorder and Response to Lithium
+author: "Catarina Sousa pg32934 | Davide Lagoa pg31552 | João Silva a72023 <br /> José Morais pg32943 | Marta Moreno pg32847"
 date: '`r format(Sys.Date(), "%d-%m-%Y")`'
 output: html_document
 ---
