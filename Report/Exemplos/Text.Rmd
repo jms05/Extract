@@ -1,0 +1,287 @@
+---
+title: "Relat?rio-Extra??o de Conhecimento de Bases de Dados Biol?gicas"
+author: "Bruna Mendes, Catarina Santos, Raquel Sim?es"
+date: "9 de Junho de 2016"
+output: html_document
+---
+# "Identification of two gene potentially associated in iron-heme homeostasis in human carotid plaque using microarray analysis"
+
+## Introdu??o
+O tromboembolismo ocorre quando h? a forma??o de um co?gulo no interior de um vaso sangu?neo. Existem v?rios factores que influenciam o aparecimento destes co?gulos, como por exemplo, a m? alimenta??o, falta de exerc?cio f?sico, traumas mec?nicos, entre outros.
+
+Neste estudo, os autores alertam para o facto de as caracter?sticas cl?ssicas ainda falharem na previs?o da ocorr?ncia de tromboembolismos. Assim sendo, recorreram ? an?lise microarrays de genes que podem estar envolvidos no aparecimento desta doen?a, para em an?lises futuras ser mais f?cil prever e, posteriomente, prevenir tromboembolismos.
+
+Foram usadas 68 amostras de 34 pacientes, em cada paciente foi efectuada uma endarterectomia da car?tida, de onde foram retiradas amostras da placa de ateroma (s?o carboidratos constituidos maioritariamente por c?lcio e ferro) e do tecido adjacente da car?tida. Cada fragmento foi posteriormente dividido para ser feita uma an?lise ao RNA e uma an?lise histol?gica, que seriam comparadas no final. Os autores referem o seu trabalho como pioneiro neste tipo de compara??o de dados nesta doen?a.
+
+Os genes CD163 e HO-1 aparecem com bastante destaque ao longo do artigo, uma vez que est?o envolvidos na homeostasia do ferro-heme que, por sua vez, s?o constituintes fundamentais da hemoglobina. Assim, estes dois genes t?m um papel fundamental quando existem les?es nos vasos sangu?neos, uma vez que previnem o aparecimento de tecido muscular e c?lulas endoteliais que, caso contr?rio, iriam  comprometer a estabilidade e integridade das paredes dos vasos; paradoxalmente, tamb?m tem caracter?sticas que se tornam perigosas quando as placas do ateroma est?o num estado avan?ado.
+
+Para o tratamento e an?lise do dataset deste [artigo](http://www.ncbi.nlm.nih.gov/pubmed/23660665), que est? dispon?vel na base de dados GEO com o identificador [GDS5083](http://www.ncbi.nlm.nih.gov/sites/GDSbrowser/?acc=GDS5083), foi utilizado o programa R e alguns packages do Bioconductor
+
+# Tratamento dos dados
+
+## Livrarias utilizadas
+
+```
+{r message = FALSE, warning = FALSE}
+source("http://bioconductor.org/biocLite.R")
+biocLite()
+biocLite("GEOquery")
+library(Biobase) 
+library(GEOquery)
+library("hgu95av2.db")
+library("Biobase")
+library('genefilter')
+library(limma)
+library(gplots)
+library(dendextend)#heatmap
+library(dendextendRcpp)#heatmap
+library(d3heatmap)#heatmap
+```
+## Download do dataset 
+Como j? foi referido, este dataset est? disponivel da base de dados GEO, no entanto apresenta-se no formato SOFT, para fazer o tratamento de dados, utilizando as ferramentas estudadas ao longo das aulas, ? necess?rio converter em ExpressionSet, para esse efeito foi usado o c?digo seguinte:
+
+```
+gds <- getGEO('GDS5083', destdir=".") 
+data <- GDS2eSet(gds,do.log2=TRUE)
+dim(data)
+exp = exprs(data)
+class(exp)
+```
+A vari?vel exp ? uma matriz que cont?m nas linhas a feature associada a cada gene e nas colunas o identificador de cada paciente para determinada amostra. ? de salientar que cada paciente tem um total de duas amostras, uma de cada tecido, por exemplo, a amostra GSM1060118 e GSM1060119, correspondem ao paciente n?mero 1.
+
+row.names | __GSM1060118__  | __GSM1060120__  | __GSM1060122__ | ...|
+-----   | --------------  | -------------- | ------------|----|
+7978905 | 2.329462        | 2.332662       | 2.285039      | ...|
+7917645 | 2.293025        | 2.301385       | 2.259570      | ...|
+7946565 | 2.281657        | 2.302225       | 2.238134      | ...|
+8180192 | 2.274669        | 2.272484       | 2.246675      | ...|
+8112916 | 2.269111        | 2.290021       | 2.223743      | ...|
+...     | ...             | ...            | ...           | ...|
+
+## Pr?-processamento de dados
+Esta etapa ? fundamental na an?lise de dados, uma vez que permite que os dados sejam de dimens?es mais trat?veis e em gamas de valores adequados para posterior an?lise. 
+
+Como n?o existiam valores omissos no dataset, n?o foi necess?rio o seu tratamento. A transforma??o logar?tmica, feita no comando ```data <- GDS2eSet(gds,do.log2=TRUE)```, permite converter os dados do formato *soft* para *expression*, facilitando a sua leitura.
+
+Inicialmente, os dados apresentam uma m?dia=2.529781 e um sd=0.5573422. Para fazer a normaliza??o usamos o comando ```scale```, que nos permite ter os dados com uma distribui??o normal, ou seja, m?dia pr?xima ou igual a zero e um desvio padr?o igual a 1.
+
+### Filtro flat patterns
+
+Usamos filtro flat pattern para filtrar os genes cujo os valores do desvio padr?o  e os valores de expres?o s?o maiores do que o duas vezes o valor da mediana do desvio padr?o de todos os genes.  
+
+```
+exp=scale(exp)
+sds=rowSds(exp)
+m=median(sds)
+data1=data[sds>=2*m,] #utilizado nas an?lises seguintes
+data1#4230 features, 64 samples
+
+#histograma
+hist(sds,breaks=50,col='mistyrose')
+abline(v=m,col="blue",lwd=4,lty=2)
+abline(v=m*2,col="red",lwd=4,lty=2)#usamos este
+abline(v=m*3,col="red",lwd=4,lty=2)
+
+#histograma ap?s filtragem
+exp1 = exprs(data1)
+sds_1=rowSds(exp1)
+hist(sds_1,breaks=50,col='mistyrose')
+
+#outra abordagem
+maximos=apply(exp,1,max)
+minimos=apply(exp,1,min)
+vl=(maximos/minimos)>2
+data2=data[vl,]
+data2 #assayData: 6017 features, 64 samples
+```
+
+![Histograma com a frequ?ncia dos valores dos desvios padr?o](histogram1.png)  
+
+![Histograma igual ao anterior, no entanto a primeira linha representa o valor da mediana, a segunda linha o valor de duas vezes a mediana](histogram2.png)  
+
+Ap?s a filtragem obtemos um ExpressionSet com 4230 features. 
+
+
+![Histograma com a frequ?ncia do desvio padr?o dos dados filtrados](histogram3.png)  
+
+Posteriormente usamos o novo dataset com os dados filtrados para constuir um histograma, a principal altera??o foi a diminui??o do valor das frequ?ncias uma vez que foram eliminadas amostras com valores muito semelhantes, que n?o trazem informa??o relevante para a an?lise dos dados.
+
+
+## An?lise de dados
+
+Para a an?lise de dados foi usado o t-test emparelhado, uma vez que as amostras est?o relacionadas.
+Destas amostras foram selecionados as 25 amostras com p-values com maior signific?ncia, ou seja, s?o os que apresentam maior express?o diferencial. Tendo em conta que existe uma maior express?o de um gene no tecido do que no outro, neste caso pode significar que o tecido com maior express?o do gene est? mais propenso a sofrer um tromboembolismo. 
+
+
+![O barplot apresenta as features dos 25 genes com o valor inferior a 0.05, quando s?o comparados os dois tecidos](rank25.png)
+
+## Clustering
+
+De forma a aprofundar o detalhe sobre rela??o entre as amostras, procedeu-se a uma an?lise de clustering aglomerativo (clustering hier?rquico), que permite agrupar os dados de acordo com a sua semelhan?a. 
+Com esse objetivo, calculou-se a dist?ncia euclidiana entre os elementos existentes e, para simplificar a leitura dos dendogramas produzidos, alterou-se a legenda das folhas para o nome de cada gene.
+
+
+### Clustering Hier?rquico
+
+```
+data_clustering = data1[ind_p25]
+datacluster=exprs(data_clustering)
+
+#mudar a legenda para os nomes dos genes
+idgenes=rownames(exprs(data_clustering))
+geneNames = subset(table_gds, ID_REF %in% idgenes)[,1:2] 
+RenameGenes=c()
+for (gene in idgenes){
+  RenameGenes=c(RenameGenes, as.character(geneNames[grep(gene,geneNames[,1]),2]))
+}
+
+rownames(datacluster) <- RenameGenes
+eucD = dist(datacluster)
+
+```
+![Clustering Hier?rquico da Dist?ncia Euclidiana pelo M?todo "Complete"](euccomp.png)  
+![Clustering Hier?rquico da Dist?ncia Euclidiana pelo M?todo "Single"](eucsingle.png)  
+![Clustering Hier?rquico da Dist?ncia Euclidiana pelo M?todo "Average"](eucavera.png)  
+
+Os tr?s dendogramas acima diferem no m?todo aglomerativo utilizado. No m?todo "complete", assume-se que a dist?ncia entre dois clusters ? a dist?ncia **m?xima** entre os elementos de cada cluster, no m?todo "average" a dist?ncia **m?dia** e no m?todo "single" a dist?ncia **m?nima**.
+
+### Heatmap
+Criou-se, tamb?m, um *heatmap* com os dados do clustering hier?rquico, que consiste numa representa??o gr?fica em que os valores individuais contidos na matriz de dados s?o representados por diferentes cores.
+
+![Heatmap do clustering hier?rquico](heatmap.png)
+No heatmap criado, a informa??o sobre os valores dos indiv?duos ? dada no eixo dos xx e o nome dos genes no eixo dos yy. Este ? interativo, permitindo obter a coluna, linha e valor correspondente a cada cor ao passar o rato em cada c?lula. Adicionalmente, ao clicar no nome de cada elemento dos eixos, ? poss?vel destacar apenas uma linha, uma coluna, ou a interse??o de uma linha com uma coluna.  
+
+### Kmeans Clustering
+Para explicar o gr?fico anterior e isolar os elementos de acordo com a sua m?dia, recorreu-se a kmeans clustering. Este m?todo de clustering ? respons?vel por otimiza??o local, em que a qualidade da solu??o final depende da solu??o inicial gerada aleatoriamente. Este m?todo ?, assim, bastante eficiente, mas n?o garante uma solu??o ?tima global.
+
+```
+dataFrame=exprs(data_clustering)
+km = kmeans(dataFrame, centers=3)
+names(km)
+km$cluster
+```
+
+Assim, obtiveram-se tr?s clusters. Ao primeiro cluster pertencem os genes CDH19, control, CATSPERB, FABP4, IL31RA, GPC3 e CD38, do segundo cluster fazem parte os genes SIGLEC1, WDFY4, IBSP, SP140, OAS1 e MX2 e no terceiro cluster incluem-se os genes CNTN4, CAB39L, HAND2, MTUS2, SMTN, MARK1 ,CNN1, LAYN, FHL5, NEGR1 e CASQ2.
+
+![Gr?fico de kmeans clustering, evidenciando a distribui??o dos 3 clusters](kclust.png)  
+
+## An?lise Preditiva ou Classifica??o da Amostra
+A an?lise preditiva permite, aplicada a uma massa de dados, identificar padr?es comportamentais e prever poss?veis resultados. Esta an?lise passa por duas fases principais: constru??o (ou treino) do modelo e predi??o.
+
+A constru??o do modelo consiste na otimiza??o de valores dependendo dos dados utilizados. Os dados s?o, ent?o divididos em dois grupos: conjunto de treino, com uma maior probabilidade, e conjunto de teste. O modelo ? processado a partir do primeiro grupo e testado ao fazer previs?es contra o grupo de teste. Embora existam in?meras op??es para a escolha da classe do modelo, neste caso, utilizaram-se apenas o m?todo dos vizinhos mais pr?ximos, ?rvores de decis?o e redes neuronais.
+
+Optou-se por tratar o problema como sendo de classifica??o, ou seja, o objetivo ? prever o tipo de tecido ("adjacent carotid tissue" ou "atheroma plaque") a partir dos valores de express?o g?nica. Para avaliar o erro associado a esta predi??o calculou-se a percentagem de elementos corretamente classificados (PECC).  
+
+ 
+### Filtragem dos Dados, divis?o dos dados em treino e teste  
+Uma vez que os dados do dataset escolhido est?o agrupados de uma forma organizada (primeiras 32 colunas para o tecido 1 e colunas restantes para o tecido 2), a sua separa??o padronizada por ?ndice seria tendenciosa (*biased*), pelo que se optou por fazer a divis?o manualmente.
+
+```
+#Filtragem do conjunto de dados
+diff1 = topTable(fit2, coef=2, 150)
+indexes=which(rownames(data1)%in%rownames(diff1))
+ALLcl=data1[indexes,]#150 features, 64 samples 
+
+#Divis?o dos dados em treino e teste
+data_train=cbind(exprs(ALLcl)[,1:19],exprs(ALLcl)[,33:52])
+data_test=cbind(exprs(ALLcl)[,19:32],exprs(ALLcl)[,52:64])
+train=t(data_train)
+test=t(data_test)
+
+#Previs?o do tipo de tecido
+classPrev=c(as.character(ALLcl$specimen[1:19]),as.character(ALLcl$specimen[33:52]))
+
+#C?lculo dos valores reais
+valores.reais=c(as.character(ALLcl$specimen[19:32]),as.character(ALLcl$specimen[52:64]))
+```
+
+### M?todo dos vizinhos mais pr?ximos
+
+```
+library(class)
+valores.previstos=knn(train,test,classPrev)  
+table(valores.previstos,valores.reais)  
+sum(valores.previstos==valores.reais)/length(valores.reais) # 0.8148148  
+```
+
+---  | valores.reais | --- |
+-----   | --------------  | -------------- | ------------|----|
+**valores.previstos** | *Adjacent Carotid Tissue*      | *Atheroma Plaque*   | 
+*Adjacent Carotid Tissue* | 11        | 3       | 
+*Atheroma Plaque* | 2        | 11       | 
+
+De acordo com este m?todo, que n?o cria um modelo diretamente, a PECC ? de 0.8148148, significando que 81,48148% dos casos foram classificados corretamente (verdadeiros positivos e verdadeiros negativos).
+
+### Redes Neuronais
+
+```
+library(nnet)
+ann = nnet(as.factor(classPrev)~.,data.frame(train),size=3)
+valores.prev.ann = predict(ann, data.frame(test), type="class")
+table(valores.prev.ann, valores.reais)
+sum(valores.prev.ann == valores.reais)/length(valores.reais) #0.7777778
+```
+---  | valores.reais | --- |
+-----   | --------------  | -------------- | ------------|----|
+**valores.prev.ann** | *Adjacent Carotid Tissue*      | *Atheroma Plaque*   | 
+*Adjacent Carotid Tissue* | 9        | 2       | 
+*Atheroma Plaque* |   4        |    12       | 
+
+Segundo o m?todo das redes neuronais, a PECC ? de 0.7777778, sendo um resultado menos otimista que no caso anterior.
+
+### ?rvores de Decis?o
+```
+arv = rpart(classPrev~.,data.frame(train))
+classes.previstas.arv = predict(arv, data.frame(test), type="class")
+sum(classes.previstas.arv == valores.reais)/length(valores.reais)#0.7407407
+table(classes.previstas.arv, valores.reais)
+```
+---  | valores.reais | --- |
+-----   | --------------  | -------------- | ------------|----|
+**classes.previstas.arv** | *Adjacent Carotid Tissue*      | *Atheroma Plaque*   | 
+*Adjacent Carotid Tissue* | 8        | 2       | 
+*Atheroma Plaque* |   5        |    12       | 
+
+![?rvore de decis?o com denota??o dos nodos terminais](arvdec.png)  
+
+De acordo com a ?rvore de decis?o, a percentagem de verdadeiros positivos e verdadeiros negativos ? 0.7407407, valor ainda mais pessimista que os previamente indicados.
+
+### Descri??o Esquem?tica das Classes do Modelo
+A descri??o esquem?tica foi poss?vel a partir da fun??o ```MLearn``` do package ```MLInterfaces```. Embora a aplica??o deste package n?o envolva a implementa??o de nenhum algoritmo, ? capaz de disponibilizar uma forma standard de parametriza??o	e	apresenta??o	de	resultados dos	algoritmos	de	aprendizagem. Assim, em concord?ncia com as classes do modelo escolhidas, implementou-se o seguinte c?digo, de forma a verificar e complementar as predi??es anteriores, tomando como exemplo o caso das redes neuronais e da ?rvore de decis?o:
+
+*1.Redes Neuronais*
+```
+library(MLInterfaces)
+nnetResultLOO <- MLearn(specimen~., ALLcl, nnetI, xvalSpec("LOO"),size=3, decay=0.01)
+confuMat(nnetResultLOO)
+```
+
+---  | predicted | --- |
+-----   | --------------  | -------------- | ------------|----|
+**classes.previstas.arv** | *Adjacent Carotid Tissue*      | *Atheroma Plaque*   | 
+*Adjacent Carotid Tissue* | 26        | 6       | 
+*Atheroma Plaque* |   6       |    26       | 
+
+*2. ?rvore de Decis?o*
+```
+treeResultCV <- MLearn(specimen~., ALLcl, rpartI, xvalSpec("LOG", 5,balKfold.xvspec(5)))
+confuMat(treeResultCV)#->Cross-Validation;?rvores de decis?o
+```
+---  | valores.reais | --- |
+-----   | --------------  | -------------- | ------------|----|
+**classes.previstas.arv** | *Adjacent Carotid Tissue*      | *Atheroma Plaque*   | 
+*Adjacent Carotid Tissue* | 17        | 15       | 
+*Atheroma Plaque* |   4        |    28       | 
+
+Analisando as duas matrizes de confus?o acima, torna-se bastante evidente que o m?todo de redes neuronais produziu melhores resultados, uma vez que os resultados observados coincidem com aqueles que eram esperados.
+
+### An?lise de Enriquecimento
+Embora este tipo de an?lise possa ser bastante ?til em alguns casos, foi imposs?vel realiz?-la para este dataset, pois o campo no qual esta se baseia (*annotation*) est? vazio.
+
+# Conclus?es
+Ap?s an?lise e interpreta??o de todos os resultados produzidos, algumas hip?teses puderam ser confirmadas.
+
+Verifica-se que os genes em estudo poder?o, de facto, estar envolvidos no aparecimento da doen?a. Adicionalmente, como j? foi referido, foi poss?vel a identifica??o de diferente express?o g?nica consoante o tecido, havendo maior probabilidade de ocorrer tromboembolismo no tecido em que a express?o ? maior.
+
+Contudo, de acordo com o afirmado pelos autores, evidencia-se que, embora a an?lise efetuada possa ser vantajosa e auxilie na compreens?o do papel desempenhado por estes genes, esta ? inconclusiva e deve ser complementada por estudos mais detalhados.
+

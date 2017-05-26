@@ -1,0 +1,51 @@
+---
+title: "RMarkdownzinho"
+output:
+  pdf_document
+---
+
+## Formatos
+Pode-se escolher um formato  alterando a linha que diz 
+"output: **html_document**" para qualquer um destes formatos:
+
+* pdf_document;
+* word_document; 
+* ...
+
+Cada formato pode ser visto em melhor detalhe 
+[aqui](http://rmarkdown.rstudio.com), em **Formats**.
+
+Pode-se usar  *italico* e  **negrito** e escrever equacoes 
+semelhante ao latex com $y = \frac{1}{n}$ 
+
+```
+# Bloco de codigo verbatim
+x <- 3
+```
+
+### Exemplo de uma tabela
+
+Numero  | Nome
+------------- | -------------
+A65780  | Joaquim Almeida
+A23456 | Pedro Pinto
+
+Para usar imagens da Internet ou guardadas em disco: 
+![Imagem do logo do R](https://www.r-project.org/Rlogo.png)
+
+## Executar codigo R
+
+Por exemplo, a raiz cubica de 9 = `r 9^(1/3)`.
+
+Para manter a mesma diretoria em todos os blocos de codigo, basta colocar no bloco inicial:
+```
+setwd("/caminho/para/a/pasta")
+opts_knit$set(root.dir = getwd())
+```
+
+Exemplo de bloco de codigo executado:
+```{r exemplo, fig.height=4, fig.width=5}
+x = 1:10
+y = 21:30
+plot(x, y)
+```
