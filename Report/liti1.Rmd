@@ -3,9 +3,16 @@ title: Extração Conheciento Bases Dados Biológicas
    <br />Bipolar Disorder and Response to Lithium
 author: "Catarina Sousa pg32934 | Davide Lagoa pg31552 | João Silva a72023 <br /> José Morais pg32943 | Marta Moreno pg32847"
 date: '`r format(Sys.Date(), "%d-%m-%Y")`'
-output: html_document
+output:
+  html_document:
+    css: tableContents.css
+    toc: true
+    depth: 3
+    number_sections: true 
+    theme: united 
+    highlight: tango
 ---
-<img src="logo.png" style = "position:absolute;top:20px;left:100px;" />
+<img src="logo.png" style = "position:absolute;top:20px;right:100px;" />
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
@@ -15,6 +22,15 @@ knitr::opts_chunk$set(echo = TRUE)
 
 
 # Os Dados
+
+Nome do Atributo  | Levels | Significado
+------------- | ------------- | -------------
+sample  | 120 | Amostras Disponíveis 
+agent | 2 | Tipo de Tratamento
+other  | 2 | Resposta ao Tratamento 
+individual  | 60 | Individuos em Análise
+description | 120 | Descrição do Sample 
+
 
 ##Metadata
 
