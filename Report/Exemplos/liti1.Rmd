@@ -1,0 +1,94 @@
+---
+title: Extração Conheciento Bases Dados Biológicas
+   <br />Bipolar Disorder and Response to Lithium
+author: "Catarina Sousa pg32934 | Davide Lagoa pg31552 | João Silva a72023 <br /> José Morais pg32943 | Marta Moreno pg32847"
+date: '`r format(Sys.Date(), "%d-%m-%Y")`'
+output:
+  html_document:
+    css: tableContents.css
+    toc: true
+    depth: 3
+    number_sections: true 
+    theme: cosmo 
+    highlight: haddock
+---
+<img src="logo.png" style = "position:absolute;top:20px;left:100px;" />
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Introdução
+
+
+#Dados
+
+<p style = 'text-align: justify;'>
+*Download* e carregamento do *dataset* escolhido para o trabalho:
+</p>
+
+```{r dataset, message = FALSE}
+#gds <- getGEO('GDS5393', destdir=".")  
+davide<-TRUE
+da <- c(550,length('davide'))
+davide<-sum(da)
+```
+
+<p style = 'text-align: justify;'>
+Conversão do *dataset* para um *expressionset*:
+</p>
+
+```{r expressionset, message = FALSE, warning = FALSE, dependson = "dataset"}
+#data <- GDS2eSet(gds,do.log2=TRUE) 
+```
+
+
+
+
+##Metadados
+
+##Análise dos Dados
+
+Nome do Atributo  | Levels | Significado
+------------- | ------------- | -------------
+sample  | 120 | Amostras Disponíveis 
+agent | 2 | Tipo de Tratamento
+other  | 2 | Resposta ao Tratamento 
+individual  | 60 | Individuos em Análise
+description | 120 | Descrição do Sample 
+
+##Tratamento dos Dados
+
+#Extração de Conhecimento
+
+##Apresentação Pipeline
+
+##Análise Expressão Diferencial e  Enriquecimento
+
+##Análise Preditiva
+
+#Resultados Obtidos
+
+##Discussão
+
+#Conclusão
+
+[//]: # ## R Markdown
+
+[//]: #This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+[//]: #When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+[//]: #```{r cars}
+[//]: #summary(cars)
+[//]: #```
+
+[//]: ### Including Plots
+
+[//]: #You can also embed plots, for example:
+
+[//]: #```{r pressure, echo=FALSE}
+[//]: #plot(pressure)
+[//]: #```
+
+[//]: #Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
