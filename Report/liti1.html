@@ -170,7 +170,7 @@ $(document).ready(function () {
 <h1><span class="header-section-number">1</span> Introdução</h1>
 <blockquote>
 <p style="text-align: justify;">
-O lítio é um dos medicamentos mais eficazes no tratamento do <strong>transtorno bipolar</strong>, no entanto a resposta dos pacientes ao qual é administrado bastante heterogénea. Apesar de se terem efetuado diversos estudos com esse fim, ainda não foram identificados biomarcadores que possam ser utilizados para monitorizar e prever a resposta ao tratamento com lítio. O estudo a ser analisado procura <strong>avaliar os efeitos do lítio sobre a expressão génica</strong> ao identificar alterações na expressão de genes específicos 1 mês após o início do tratamento, sendo essa informação utilizada para prever os resultados ao fim de 6 meses.
+O lítio é um dos medicamentos mais eficazes no tratamento do <strong>transtorno bipolar</strong>, no entanto a resposta dos pacientes ao qual é administrado é bastante heterogénea. Apesar de se terem efetuado diversos estudos com esse fim, ainda não foram identificados biomarcadores que possam ser utilizados para monitorizar e prever a resposta ao tratamento com lítio. O estudo a ser analisado procura <strong>avaliar os efeitos do lítio sobre a expressão génica</strong> ao identificar alterações na expressão de genes específicos 1 mês após o início do tratamento, sendo essa informação utilizada para prever os resultados ao fim de 6 meses.
 </p>
 </blockquote>
 <blockquote>
@@ -368,6 +368,24 @@ Resposta dos diferentes grupos, <em>control</em> e <em>lithium</em> ao tratament
 </div>
 <div id="tratamento-dos-dados" class="section level2">
 <h2><span class="header-section-number">2.2</span> Tratamento dos Dados</h2>
+<blockquote>
+<p style="text-align: justify;">
+Verificar a existência registos com valores omissos <em>NA’s</em> no <em>DataSet</em> :
+</p>
+</blockquote>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">incomplete =<span class="st"> </span><span class="kw">sum</span>(!<span class="kw">complete.cases</span>(exp))
+incomplete</code></pre></div>
+<pre><code>## [1] 784</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">complete =<span class="st"> </span><span class="kw">sum</span>(<span class="kw">complete.cases</span>(exp))
+complete</code></pre></div>
+<pre><code>## [1] 47323</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">incomplete+complete</code></pre></div>
+<pre><code>## [1] 48107</code></pre>
+<blockquote>
+<p style="text-align: justify;">
+Com a execução dos comandos anteriores verificamos que existem um total de 784 registos incompletos <em>DataSet</em> e 47323 registos completos, fazendo assim um total de 48107, como esperado.
+</p>
+</blockquote>
 </div>
 </div>
 <div id="extracao-de-conhecimento" class="section level1">
