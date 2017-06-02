@@ -145,12 +145,14 @@ addmargins(table(data$agent,data$other))
 ```
 ##Tratamento dos Dados
 > <p style = 'text-align: justify;'>
-Verificar a existência de valores omissos *NA's* no *DataSet* :
+Verificar a existência registos com valores omissos *NA's* no *DataSet* :
 </p>
 
 ```{r NAs, message = FALSE, warning = FALSE}
-incomplete = sum(is.na(exp))
+incomplete = sum(!complete.cases(exp))
+incomplete
 complete = sum(complete.cases(exp))
+complete
 incomplete+complete
 ```
 > <p style = 'text-align: justify;'>
