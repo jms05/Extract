@@ -9,30 +9,69 @@ output:
     toc: true
     depth: 3
     number_sections: true 
-    theme: united 
-    highlight: tango
+    theme: cosmo 
+    highlight: haddock
 ---
-<img src="logo.png" style = "position:absolute;top:20px;right:100px;" />
+<img src="logo.png" style = "position:absolute;top:20px;left:100px;" />
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
 # Introdução
+> O lítio é um dos medicamentos mais eficazes no tratamento do **transtorno bipolar**, sendo no entanto a resposta dos pacientes ao qual é administrado bastante heterogénea. Apesar de se terem efetuado diversos estudos com esse fim, ainda não foram identificados biomarcadores que possam ser utilizados para monitorizar e prever a resposta ao tratamento com lítio. O estudo a ser analisado procura **avaliar os efeitos do lítio sobre a expressão génica** ao identificar alterações na expressão de genes específicos 1 mês após o início do tratamento, sendo essa informação utilizada para prever os resultados 6 meses mais tarde.
+
+> Para o estudo foram recrutados 74 pacientes, sendo que 9 desistiram antes da primeira colheita de sangue, e outros 5 apresentaram fraca qualidade ou quantidade insuficiente de RNA, pelo que não constam nos resultados. Os restantes **60 pacientes** foram **divididos em 2 grupos** criados aleatoriamente: um sujeito a tratamento com pelo menos um outro *medicamento que não lítio (OPT)*, e outro que fazia o tratamento anterior acoplado com a *toma de lítio (Li + OPT)*, sendo os grupos constituídos por 32 e 28 pacientes, respetivamente.
+
+> Para o grupo *Li + OPT*, 62 genes apresentaram indução diferencial entre os pacientes que responderam ao tratamento e os que não responderam ao tratamento. Os pacientes do grupo *Li + OTP* que responderam ao tratamento apresentavam padrões distintos que não foram observados nos pacientes do grupo *OTP* com resposta ao tratamento, sendo que estes últimos eram mais parecidos com os pacientes do grupo *Li + OTP* sem resposta ao tratamento.
+
+> Também foram realizados **testes utilizando RT-PCR** em tempo real de certos genes, tendo-se verificado que os resultados desta análise foram **similares aos obtidos com microarrays**, com os pacientes *Li + OPT* com resposta ao tratamento a demonstrarem uma maior indução desses genes do que os outros grupos. No entanto, com a exceção do gene *BCL2L1*, os resultados não foram estatisticamente significativos, o que corrobora o facto de que nos estudos com *microarrays* a maior diferença foi observada para *BCL2L1*.
 
 
-# Os Dados
+#Dados
 
-Nome do Atributo  | Levels | Significado
+<p style = 'text-align: justify;'>
+*Download* e carregamento do *dataset* escolhido para o trabalho:
+</p>
+
+```{r dataset, message = FALSE}
+#gds <- getGEO('GDS5393', destdir=".")  
+davide<-TRUE
+da <- c(550,length('davide'))
+davide<-sum(da)
+```
+
+<p style = 'text-align: justify;'>
+Conversão do *dataset* para um *expressionset*:
+</p>
+
+```{r expressionset, message = FALSE, warning = FALSE, dependson = "dataset"}
+#data <- GDS2eSet(gds,do.log2=TRUE) 
+```
+
+
+
+
+##Metadados
+> De maneira a solidificar o nosso conhecimento sobre o *DataSet* em estuda é muito útil possuirmos uma ideia dos dados disponiveis e os seus significados. Para isso o *R* permite correr alguns comandos que nos premitem obter esse conhecimento.
+```{r , message = FALSE, warning = FALSE, dependson = "dataset"}
+varMetadata(data)
+```
+> Com a execução do comando anterior ficamos a saber que o nosso *DataSet* possui os seguintes atributos:
+1. sample
+2. agent
+3. other
+4. individual
+5. description
+
+
+Nome do Atributo  | Valores Distintos | Significado
 ------------- | ------------- | -------------
 sample  | 120 | Amostras Disponíveis 
 agent | 2 | Tipo de Tratamento
 other  | 2 | Resposta ao Tratamento 
 individual  | 60 | Individuos em Análise
 description | 120 | Descrição do Sample 
-
-
-##Metadata
 
 ##Análise dos Dados
 
