@@ -16,66 +16,135 @@ output:
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+#install.packages("gplots")
+#install.packages("dendextend")#para por por no heatmap nas linhas
+#install.packages("dendextendRcpp")#para por por no heatmap nas linhas
+#install.packages("d3heatmap")#para fazer o heatmap
+#source("http://bioconductor.org/biocLite.R")
+#biocLite()
+#biocLite("GEOquery")
+#biocLite("limma")
+
+#library(Biobase) 
+#library(GEOquery)
+#library('genefilter')
+#library(limma)
+#library(gplots)
+#library(dendextend)#heatmap
+#library(d3heatmap)#heatmap
 ```
 
 # Introdução
-> O lítio é um dos medicamentos mais eficazes no tratamento do **transtorno bipolar**, sendo no entanto a resposta dos pacientes ao qual é administrado bastante heterogénea. Apesar de se terem efetuado diversos estudos com esse fim, ainda não foram identificados biomarcadores que possam ser utilizados para monitorizar e prever a resposta ao tratamento com lítio. O estudo a ser analisado procura **avaliar os efeitos do lítio sobre a expressão génica** ao identificar alterações na expressão de genes específicos 1 mês após o início do tratamento, sendo essa informação utilizada para prever os resultados 6 meses mais tarde.
 
-> Para o estudo foram recrutados 74 pacientes, sendo que 9 desistiram antes da primeira colheita de sangue, e outros 5 apresentaram fraca qualidade ou quantidade insuficiente de RNA, pelo que não constam nos resultados. Os restantes **60 pacientes** foram **divididos em 2 grupos** criados aleatoriamente: um sujeito a tratamento com pelo menos um outro *medicamento que não lítio (OPT)*, e outro que fazia o tratamento anterior acoplado com a *toma de lítio (Li + OPT)*, sendo os grupos constituídos por 32 e 28 pacientes, respetivamente.
+> <p style = 'text-align: justify;'>O lítio é um dos medicamentos mais eficazes no tratamento do **transtorno bipolar**, sendo no entanto a resposta dos pacientes ao qual é administrado bastante heterogénea. Apesar de se terem efetuado diversos estudos com esse fim, ainda não foram identificados biomarcadores que possam ser utilizados para monitorizar e prever a resposta ao tratamento com lítio. O estudo a ser analisado procura **avaliar os efeitos do lítio sobre a expressão génica** ao identificar alterações na expressão de genes específicos 1 mês após o início do tratamento, sendo essa informação utilizada para prever os resultados 6 meses mais tarde.
+</p>
 
-> Para o grupo *Li + OPT*, 62 genes apresentaram indução diferencial entre os pacientes que responderam ao tratamento e os que não responderam ao tratamento. Os pacientes do grupo *Li + OTP* que responderam ao tratamento apresentavam padrões distintos que não foram observados nos pacientes do grupo *OTP* com resposta ao tratamento, sendo que estes últimos eram mais parecidos com os pacientes do grupo *Li + OTP* sem resposta ao tratamento.
+> <p style = 'text-align: justify;'> Para o estudo foram recrutados 74 pacientes, sendo que 9 desistiram antes da primeira colheita de sangue, e outros 5 apresentaram fraca qualidade ou quantidade insuficiente de RNA, pelo que não constam nos resultados. Os restantes **60 pacientes** foram **divididos em 2 grupos** criados aleatoriamente: um sujeito a tratamento com pelo menos um outro *medicamento que não lítio (OPT)*, e outro que fazia o tratamento anterior acoplado com a *toma de lítio (Li + OPT)*, sendo os grupos constituídos por 32 e 28 pacientes, respetivamente.
+</p>
 
-> Também foram realizados **testes utilizando RT-PCR** em tempo real de certos genes, tendo-se verificado que os resultados desta análise foram **similares aos obtidos com microarrays**, com os pacientes *Li + OPT* com resposta ao tratamento a demonstrarem uma maior indução desses genes do que os outros grupos. No entanto, com a exceção do gene *BCL2L1*, os resultados não foram estatisticamente significativos, o que corrobora o facto de que nos estudos com *microarrays* a maior diferença foi observada para *BCL2L1*.
+> <p style = 'text-align: justify;'> Para o grupo *Li + OPT*, 62 genes apresentaram indução diferencial entre os pacientes que responderam ao tratamento e os que não responderam ao tratamento. Os pacientes do grupo *Li + OTP* que responderam ao tratamento apresentavam padrões distintos que não foram observados nos pacientes do grupo *OTP* com resposta ao tratamento, sendo que estes últimos eram mais parecidos com os pacientes do grupo *Li + OTP* sem resposta ao tratamento.
+</p>
+
+> <p style = 'text-align: justify;'> Também foram realizados **testes utilizando RT-PCR** em tempo real de certos genes, tendo-se verificado que os resultados desta análise foram **similares aos obtidos com microarrays**, com os pacientes *Li + OPT* com resposta ao tratamento a demonstrarem uma maior indução desses genes do que os outros grupos. No entanto, com a exceção do gene *BCL2L1*, os resultados não foram estatisticamente significativos, o que corrobora o facto de que nos estudos com *microarrays* a maior diferença foi observada para *BCL2L1*.
+</p>
 
 
 #Dados
 
-<p style = 'text-align: justify;'>
-*Download* e carregamento do *dataset* escolhido para o trabalho:
+> <p style = 'text-align: justify;'>
+*Download* e carregamento do *DataSet* escolhido para o trabalho:
 </p>
 
 ```{r dataset, message = FALSE}
 #gds <- getGEO('GDS5393', destdir=".")  
-davide<-TRUE
-da <- c(550,length('davide'))
-davide<-sum(da)
 ```
 
-<p style = 'text-align: justify;'>
-Conversão do *dataset* para um *expressionset*:
+> <p style = 'text-align: justify;'>
+Conversão do *DataSet* para um *expressionset*:
 </p>
 
 ```{r expressionset, message = FALSE, warning = FALSE, dependson = "dataset"}
 #data <- GDS2eSet(gds,do.log2=TRUE) 
+data
+```
+> <p style = 'text-align: justify;'>
+Dimensão do *DataSet*: 
+</p>
+```{r , message = FALSE}
+dim(data) 
 ```
 
-
+> <p style = 'text-align: justify;'>
+Conversão do *DataSet* para uma matiz numérica, contendo as *samples* nas colunas e *features* nas linhas: 
+</p>
+```{r , message = FALSE}
+exp = exprs(data)
+class(exp)
+exp[5:15,1:5]
+```
 
 
 ##Metadados
-> De maneira a solidificar o nosso conhecimento sobre o *DataSet* em estuda é muito útil possuirmos uma ideia dos dados disponiveis e os seus significados. Para isso o *R* permite correr alguns comandos que nos premitem obter esse conhecimento.
+
+> <p style = 'text-align: justify;'> Resumo do conteudo do *DataSet:* 
+</p>
+
+```{r , message = FALSE, warning = FALSE, dependson = "dataset"}
+abstract(data)
+```
+> <p style = 'text-align: justify;'> Exemplo  pare verificar o nome de algumas das amostras e identificados dos genes:
+</p>
+
+```{r , message = FALSE, warning = FALSE, dependson = "dataset"}
+sampleNames(data)[1:10]
+featureNames(data)[1:8]
+```
+
+> <p style = 'text-align: justify;'> De maneira a solidificar o nosso conhecimento sobre o *DataSet* em estudo é muito útil termos uma ideia dos atributos disponíveis. 
+</p>
 ```{r , message = FALSE, warning = FALSE, dependson = "dataset"}
 varMetadata(data)
 ```
-> Com a execução do comando anterior ficamos a saber que o nosso *DataSet* possui os seguintes atributos:
-1. sample
-2. agent
-3. other
-4. individual
-5. description
+> <p style = 'text-align: justify;'> A execução do comando anterior permitiu identificar no nosso *DataSet* os seguintes atributos, sendo que nenhum deles apresenta descrição:
+</p>
 
+* sample
+* agent
+* other
+* individual
+* description
+* time
 
-Nome do Atributo  | Valores Distintos | Significado
-------------- | ------------- | -------------
-sample  | 120 | Amostras Disponíveis 
-agent | 2 | Tipo de Tratamento
-other  | 2 | Resposta ao Tratamento 
-individual  | 60 | Individuos em Análise
-description | 120 | Descrição do Sample 
+> <p style = 'text-align: justify;'> Para aprofundar o nosso conhecimento sobre este *DataSet*, corremos os seguintes comandos de modo a organizar algumas ideias sobre os atributos disponíveis numa tabela. 
+</p>
 
-##Análise dos Dados
+```{r , message = FALSE, warning = FALSE,results="hide"}
+data$sample
+data$agent
+data$other
+data$individual
+data$description
+data$time
+```
 
+Nome do Atributo | Significado  | Valores Distintos  | Valores Distintos 
+------------- | ------------- | ------------- | -------------
+sample | Amostras Disponíveis  | 120 | "GSM1105438" "GSM1105486"... 
+agent | Tipo de Tratamentot | 2 |  "control" "lithium"
+other| Resposta ao Tratamento | 2 | "non-responder" "responder"
+individual | Indivíduos em Análise  | 60 | "Li+OPT_1" "Li+OPT_10"...
+description | Descrição do Sample | 120 | NULL
+time |  Momento em que foi obtida a amostra  | 2 | "1 month" "baseline"
+
+> <p style = 'text-align: justify;'> 
+
+</p>
+
+```{r , message = FALSE, warning = FALSE}
+addmargins(table(data$agent,data$other))
+```
 ##Tratamento dos Dados
+
 
 #Extração de Conhecimento
 
