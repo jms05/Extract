@@ -34,7 +34,7 @@ knitr::opts_chunk$set(echo = TRUE)
 #library(gplots)
 #library(dendextend)#heatmap
 #library(d3heatmap)#heatmap
-library(matrixStats)
+#library(matrixStats)
 ```
 
 # Introdução
@@ -225,13 +225,14 @@ hist(rowSds(exp_filtrado),breaks=50,col='mistyrose',xlab = 'Desvio padrão',ylab
 abline(v=m*2,col="red",lwd=4,lty=2)
 ```
 
-#Extração de Conhecimento
 
 
 
-##Análise Expressão Diferencial e  Enriquecimento
+#Análise Expressão Diferencial e  Enriquecimento
 
-##Análise Preditiva
+#Clustering de Genes e Amostras
+
+#Análise Preditiva
 
 #Resultados Obtidos
 
