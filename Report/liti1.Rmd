@@ -3,6 +3,7 @@ title: Extração Conheciento Bases Dados Biológicas
    <br />Bipolar Disorder and Response to Lithium
 author: "Catarina Sousa pg32934 | Davide Lagoa pg31552 | João Silva a72023 <br /> José Morais pg32943 | Marta Moreno pg32847"
 date: '`r format(Sys.Date(), "%d-%m-%Y")`'
+bibliography: Referencias.bibtex
 output:
   html_document:
     css: tableContents.css
@@ -24,6 +25,7 @@ knitr::opts_chunk$set(echo = TRUE)
 #biocLite()
 #biocLite("GEOquery")
 #biocLite("limma")
+#biocLite("genefilter")
 
 #library(Biobase) 
 #library(GEOquery)
@@ -32,6 +34,7 @@ knitr::opts_chunk$set(echo = TRUE)
 #library(gplots)
 #library(dendextend)#heatmap
 #library(d3heatmap)#heatmap
+library(matrixStats)
 ```
 
 # Introdução
@@ -45,7 +48,7 @@ knitr::opts_chunk$set(echo = TRUE)
 > <p style = 'text-align: justify;'> Para o grupo *Li + OPT*, 62 genes apresentaram indução diferencial entre os pacientes que responderam ao tratamento e os que não responderam ao tratamento. Os pacientes do grupo *Li + OPT* que responderam ao tratamento apresentavam padrões distintos que não foram observados nos pacientes do grupo *OPT* com resposta ao tratamento, sendo que estes últimos eram mais parecidos com os pacientes do grupo *Li + OPT* sem resposta ao tratamento.
 </p>
 
-> <p style = 'text-align: justify;'> Também foram realizados **testes utilizando RT-PCR** em tempo real de certos genes, tendo-se verificado que os resultados desta análise foram **similares aos obtidos com microarrays**, com os pacientes *Li + OPT* com resposta ao tratamento a demonstrarem uma maior indução desses genes do que os outros grupos. No entanto, com a exceção do gene *BCL2L1*, os resultados não foram estatisticamente significativos, o que corrobora o facto de que nos estudos com *microarrays* a maior diferença foi observada para *BCL2L1*.
+> <p style = 'text-align: justify;'> Também foram realizados **testes utilizando RT-PCR** em tempo real de certos genes, tendo-se verificado que os resultados desta análise foram **similares aos obtidos com microarrays**, com os pacientes *Li + OPT* com resposta ao tratamento a demonstrarem uma maior indução desses genes do que os outros grupos. No entanto, com a exceção do gene *BCL2L1*, os resultados não foram estatisticamente significativos, o que corrobora o facto de que nos estudos com *microarrays* a maior diferença foi observada para *BCL2L1* [@beech2014gene].
 </p>
 
 
@@ -81,6 +84,16 @@ Conversão do *DataSet* para uma matiz numérica, contendo as *samples* nas colu
 exp = exprs(data)
 class(exp)
 exp[5:15,1:5]
+```
+
+> <p style = 'text-align: justify;'>
+Fazendo um boxplot com o logaritmo de base 2 dos dados de express~o para todas as amostras facilmente verificamos a escala e distribuiãcão dos dados. As caixas apresentam forma e centro semelhantes entre amostras, indicando que os dados de expressão já normalizados, estes dados apesar de normalizados não podem ser utilizados na análise pois ainda possuem valores omissos.
+</p>
+
+```{r boxplot, fig.width = 10, fig.align = 'center',  message = FALSE, warning = FALSE}
+#col = terrain.colors(length(pData(data)$sample), alpha = 0.6)
+#dataBox = log2(exp)
+#boxplot(dataBox, col = col, whiskcol = col, pch = 21, cex = 0.8, xlab = 'Amostras', ylab = 'Intensidades (log2)', notch = TRUE, frame = FALSE)
 ```
 
 
@@ -156,7 +169,31 @@ complete
 incomplete+complete
 ```
 > <p style = 'text-align: justify;'>
-Com a execução dos comandos anteriores verificamos que existem um total de 784 registos incompletos *DataSet* e 47323 registos completos, fazendo assim um total de 48107, como esperado.
+Com a execução dos comandos anteriores verificamos que existem um total de 784 registos incompletos *DataSet* e 47323 registos completos, fazendo assim um total de 48107, como esperado. De forma a tornar possÌvel a análise dos dados, procedeu-se à remoção dos valores omissos.  
+</p>
+```{r , message = FALSE, warning = FALSE}
+exp_complete=na.exclude(exp)
+```
+> <p style = 'text-align: justify;'>
+Para verificar se os nossos dados seguiam uma distribuição normal (0,1), calculámos a mèdia e desvio padrão dos dados do nosso 
+*DataSet* com os seguintes comandos: 
+</p>
+```{r , message = FALSE, warning = FALSE}
+mean(exp_complete)
+sd(exp_complete)
+```
+> <p style = 'text-align: justify;'>
+com isto verificamos que os nosso dados não seguem uma distribuição normal (0,1). Pelo que se torna necessário normalizar-los recorrendo aos seguintes comandos: 
+</p>
+
+```{r , message = FALSE, warning = FALSE}
+exp_norm=scale(exp_complete) 
+dim(exp_norm)
+mean(exp_norm)
+sd(exp_norm)
+```
+> <p style = 'text-align: justify;'>
+agora os nosso dados seguem uma distribuição normal (0,1). Pelo que a partir de agora serão estes a utilizar.
 </p>
 
 #Extração de Conhecimento
@@ -173,22 +210,4 @@ Com a execução dos comandos anteriores verificamos que existem um total de 784
 
 #Conclusão
 
-[//]: # ## R Markdown
-
-[//]: #This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
-
-[//]: #When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
-
-[//]: #```{r cars}
-[//]: #summary(cars)
-[//]: #```
-
-[//]: ### Including Plots
-
-[//]: #You can also embed plots, for example:
-
-[//]: #```{r pressure, echo=FALSE}
-[//]: #plot(pressure)
-[//]: #```
-
-[//]: #Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+#Referências

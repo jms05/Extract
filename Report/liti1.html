@@ -162,6 +162,7 @@ $(document).ready(function () {
 <li><a href="#discussao"><span class="toc-section-number">4.1</span> Discussão</a></li>
 </ul></li>
 <li><a href="#conclusao"><span class="toc-section-number">5</span> Conclusão</a></li>
+<li><a href="#referencias">Referências</a></li>
 </ul>
 </div>
 
@@ -185,7 +186,7 @@ Para o grupo <em>Li + OPT</em>, 62 genes apresentaram indução diferencial entr
 </blockquote>
 <blockquote>
 <p style="text-align: justify;">
-Também foram realizados <strong>testes utilizando RT-PCR</strong> em tempo real de certos genes, tendo-se verificado que os resultados desta análise foram <strong>similares aos obtidos com microarrays</strong>, com os pacientes <em>Li + OPT</em> com resposta ao tratamento a demonstrarem uma maior indução desses genes do que os outros grupos. No entanto, com a exceção do gene <em>BCL2L1</em>, os resultados não foram estatisticamente significativos, o que corrobora o facto de que nos estudos com <em>microarrays</em> a maior diferença foi observada para <em>BCL2L1</em>.
+Também foram realizados <strong>testes utilizando RT-PCR</strong> em tempo real de certos genes, tendo-se verificado que os resultados desta análise foram <strong>similares aos obtidos com microarrays</strong>, com os pacientes <em>Li + OPT</em> com resposta ao tratamento a demonstrarem uma maior indução desses genes do que os outros grupos. No entanto, com a exceção do gene <em>BCL2L1</em>, os resultados não foram estatisticamente significativos, o que corrobora o facto de que nos estudos com <em>microarrays</em> a maior diferença foi observada para <em>BCL2L1</em> <span class="citation">(Beech et al. 2014)</span>.
 </p>
 </blockquote>
 </div>
@@ -243,12 +244,20 @@ Conversão do <em>DataSet</em> para uma matiz numérica, contendo as <em>samples
 ## ILMN_1343062         NA         NA         NA         NA         NA
 ## ILMN_1343063         NA         NA         NA         NA         NA
 ## ILMN_1343064         NA         NA         NA         NA         NA
-## ILMN_1343291      3.897      3.879      3.892      3.899      3.881
-## ILMN_1343295      3.597      3.637      3.642      3.543      3.583
+## ILMN_1343291   3.897076   3.879412   3.891526   3.899089   3.881381
+## ILMN_1343295   3.597257   3.636949   3.642447   3.543385   3.582953
 ## ILMN_1343296         NA         NA         NA         NA         NA
 ## ILMN_1343297         NA         NA         NA         NA         NA
 ## ILMN_1343298         NA         NA         NA         NA         NA
 ## ILMN_1343299         NA         NA         NA         NA         NA</code></pre>
+<blockquote>
+<p style="text-align: justify;">
+Fazendo um boxplot com o logaritmo de base 2 dos dados de express~o para todas as amostras facilmente verificamos a escala e distribuiãcão dos dados. As caixas apresentam forma e centro semelhantes entre amostras, indicando que os dados de expressão já normalizados, estes dados apesar de normalizados não podem ser utilizados na análise pois ainda possuem valores omissos.
+</p>
+</blockquote>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co">#col = terrain.colors(length(pData(data)$sample), alpha = 0.6)</span>
+<span class="co">#dataBox = log2(exp)</span>
+<span class="co">#boxplot(dataBox, col = col, whiskcol = col, pch = 21, cex = 0.8, xlab = 'Amostras', ylab = 'Intensidades (log2)', notch = TRUE, frame = FALSE)</span></code></pre></div>
 <div id="metadados" class="section level2">
 <h2><span class="header-section-number">2.1</span> Metadados</h2>
 <blockquote>
@@ -383,7 +392,34 @@ complete</code></pre></div>
 <pre><code>## [1] 48107</code></pre>
 <blockquote>
 <p style="text-align: justify;">
-Com a execução dos comandos anteriores verificamos que existem um total de 784 registos incompletos <em>DataSet</em> e 47323 registos completos, fazendo assim um total de 48107, como esperado.
+Com a execução dos comandos anteriores verificamos que existem um total de 784 registos incompletos <em>DataSet</em> e 47323 registos completos, fazendo assim um total de 48107, como esperado. De forma a tornar possÌvel a análise dos dados, procedeu-se à remoção dos valores omissos.
+</p>
+</blockquote>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">exp_complete=<span class="kw">na.exclude</span>(exp)</code></pre></div>
+<blockquote>
+<p style="text-align: justify;">
+Para verificar se os nossos dados seguiam uma distribuição normal (0,1), calculámos a mèdia e desvio padrão dos dados do nosso <em>DataSet</em> com os seguintes comandos:
+</p>
+</blockquote>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">mean</span>(exp_complete)</code></pre></div>
+<pre><code>## [1] 2.883951</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">sd</span>(exp_complete)</code></pre></div>
+<pre><code>## [1] 0.2084394</code></pre>
+<blockquote>
+<p style="text-align: justify;">
+com isto verificamos que os nosso dados não seguem uma distribuição normal (0,1). Pelo que se torna necessário normalizar-los recorrendo aos seguintes comandos:
+</p>
+</blockquote>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">exp_norm=<span class="kw">scale</span>(exp_complete) 
+<span class="kw">dim</span>(exp_norm)</code></pre></div>
+<pre><code>## [1] 47323   120</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">mean</span>(exp_norm)</code></pre></div>
+<pre><code>## [1] 5.533452e-17</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">sd</span>(exp_norm)</code></pre></div>
+<pre><code>## [1] 0.9999895</code></pre>
+<blockquote>
+<p style="text-align: justify;">
+agora os nosso dados seguem uma distribuição normal (0,1). Pelo que a partir de agora serão estes a utilizar.
 </p>
 </blockquote>
 </div>
@@ -408,6 +444,14 @@ Com a execução dos comandos anteriores verificamos que existem um total de 784
 </div>
 <div id="conclusao" class="section level1">
 <h1><span class="header-section-number">5</span> Conclusão</h1>
+</div>
+<div id="referencias" class="section level1 unnumbered">
+<h1>Referências</h1>
+<div id="refs" class="references">
+<div id="ref-beech2014gene">
+<p>Beech, RD, JJ Leffert, A Lin, LG Sylvia, S Umlauf, S Mane, H Zhao, et al. 2014. “Gene-Expression Differences in Peripheral Blood Between Lithium Responders and Non-Responders in the Lithium Treatment-Moderate Dose Use Study (Litmus).” <em>The Pharmacogenomics Journal</em> 14 (2). Nature Publishing Group: 182.</p>
+</div>
+</div>
 </div>
 
 
