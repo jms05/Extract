@@ -137,7 +137,7 @@ description | Descrição do Sample | 120 | NULL
 time |  Momento em que foi obtida a amostra  | 2 | "1 month" "baseline"
 
 > <p style = 'text-align: justify;'> 
-
+Resposta dos diferentes grupos, *control* e *lithium* ao tratamento aplicado:
 </p>
 
 ```{r , message = FALSE, warning = FALSE}
