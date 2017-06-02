@@ -36,7 +36,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 # Introdução
 
-> <p style = 'text-align: justify;'>O lítio é um dos medicamentos mais eficazes no tratamento do **transtorno bipolar**, no entanto a resposta dos pacientes ao qual é administrado bastante heterogénea. Apesar de se terem efetuado diversos estudos com esse fim, ainda não foram identificados biomarcadores que possam ser utilizados para monitorizar e prever a resposta ao tratamento com lítio. O estudo a ser analisado procura **avaliar os efeitos do lítio sobre a expressão génica** ao identificar alterações na expressão de genes específicos 1 mês após o início do tratamento, sendo essa informação utilizada para prever os resultados ao fim de 6 meses.
+> <p style = 'text-align: justify;'>O lítio é um dos medicamentos mais eficazes no tratamento do **transtorno bipolar**, no entanto a resposta dos pacientes ao qual é administrado é bastante heterogénea. Apesar de se terem efetuado diversos estudos com esse fim, ainda não foram identificados biomarcadores que possam ser utilizados para monitorizar e prever a resposta ao tratamento com lítio. O estudo a ser analisado procura **avaliar os efeitos do lítio sobre a expressão génica** ao identificar alterações na expressão de genes específicos 1 mês após o início do tratamento, sendo essa informação utilizada para prever os resultados ao fim de 6 meses.
 </p>
 
 > <p style = 'text-align: justify;'> Para o estudo foram recrutados 74 pacientes, sendo que 9 desistiram antes da primeira colheita de sangue e outros 5 apresentaram fraca qualidade ou quantidade insuficiente de RNA, pelo que não constam nos resultados. Os restantes **60 pacientes** foram **divididos em 2 grupos** criados aleatoriamente: um sujeito a tratamento com pelo menos um outro *medicamento que não lítio (OPT)*, e outro que fazia o tratamento anterior acoplado com a *toma de lítio (Li + OPT)*, sendo os grupos constituídos por 32 e 28 pacientes, respetivamente.
@@ -144,7 +144,18 @@ Resposta dos diferentes grupos, *control* e *lithium* ao tratamento aplicado:
 addmargins(table(data$agent,data$other))
 ```
 ##Tratamento dos Dados
+> <p style = 'text-align: justify;'>
+Verificar a existência de valores omissos *NA's* no *DataSet* :
+</p>
 
+```{r NAs, message = FALSE, warning = FALSE}
+incomplete = sum(is.na(exp))
+complete = sum(complete.cases(exp))
+incomplete+complete
+```
+> <p style = 'text-align: justify;'>
+Com a execução do comando anterior verificamos que existem um total de 94080 valores omissos no nosso *DataSet*.
+</p>
 
 #Extração de Conhecimento
 
