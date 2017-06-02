@@ -11,6 +11,17 @@ biocLite("GEOquery")
 biocLite("limma")
 biocLite("genefilter")
 
+biocLite("hgu133a.db")
+library("hgu133a.db")
+#biocLite("hgu95av2.db")
+
+biocLite("illuminaHumanv4.db")
+
+library("illuminaHumanv4.db") #Get this library if you don't have
+
+biocLite("hgu133plus2.db")
+library("hgu133plus2.db")
+
 library(Biobase) 
 library(GEOquery)
 library("hgu95av2.db")
@@ -21,9 +32,12 @@ library(dendextend)#heatmap
 library(dendextendRcpp)#heatmap
 library(d3heatmap)#heatmap
 
+
+
+
 #download do ficheiro GDS
 gds <- getGEO('GDS5393', destdir=".")  
-remove(gds2)
+gds
 #converte GDS em ExpressionSet e ao mesmo tempo faz a tranforma??o logar?tmica
 data <- GDS2eSet(gds,do.log2=TRUE)  
 dim(data)#Features:48107 Samples:120
@@ -40,7 +54,10 @@ data$sample[1:5]#120 levels que correspondem as amostras
 data$agent[1:5]#2 levels:control lithium
 data$other[1:5]#2 levels: non-responder responder
 data$individual[1:5]#60 levels que correspondem aos pacientes
-data$description[1:5]# [1] "Value for GSM1105438: OPT_1-baseline; src: Peripheral blood" 
+data$time #1 mes e baseline 
+
+exp
+data$description[1:5]# [1] "Value for GSM1105438: OPT_1-baseline + Li+OPT_1 ; src: Peripheral blood" 
 annotation(data)# VER!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 experimentData(data)
 abstract(data)# "Analysis of peripheral blood from patients with bipolar disorder 
@@ -83,6 +100,9 @@ abline(v=m*2,col="red",lwd=4,lty=2)#usamos este
 exp_filtrado=exp_complete[sds>=2*m,]
 exp_filtrado #7588 features, 64 samples (utilizado nas an?lises seguintes)
 
+
+#para construir o histograma tivemos que usar a matriz 
+
 #Histograma filtrado
 sds__1=rowSds(exp_filtrado)
 hist(sds__1,breaks=50,col='mistyrose')
@@ -90,14 +110,133 @@ hist(sds__1,breaks=50,col='mistyrose')
 ####### Analise de expressao diferencial 
 library('genefilter')
 exp_filtrado2=data[sds>=2*m,]
-test=rowttests(exp_filtrado2,"agent")
-p_value=test$p.value#p_values do teste feito anteriomente
-n_signifi=p_value[which(p_value<0.05)]#628 têm diferenças significativas
-
-rank=order(test$p.value)#ordenar os p-values
-ind_p25=rank[1:25]#?ndices dos 25 genes com menor p_value(maior evidencia de express?o diferencial)
+#para a analise diferencial temos que usar o expression set dai fazer a linha anterior
 
 
+#######Análise de expressão diferencial e Enriquecimento#######
+biocLite("affydata")
+biocLite("affy")
+library(affydata)
+library(affy)
+
+###### Para realizarmos testes de hipóteses paramétricos (t-test) precisamos
+#de normalizar o nosso ExpressionSet, mantendo os filtros (remoção de NA e aplicação de filtros "Flat Patterns")
+getFromExpression <- function(expressionFonte,valuesOK)
+{
+  j=1
+  nomes = featureNames(expressionFonte)
+  indicesValuesOK =c()
+  for(i in 1:length(valuesOK)){
+    nomeOK = valuesOK[i]
+    indices = which( nomes== nomeOK)
+    if(length(indices) > 0){
+      indicesValuesOK[j] = indices
+      
+      j=j+1
+    }
+    
+    
+  }
+  return(expressionFonte[indicesValuesOK,])
+}
+
+exp_filtrado2_matrix = exprs(exp_filtrado2)
+exp_filtrado2 = getFromExpression(exp_filtrado2,rownames(exp_filtrado2_matrix[complete.cases(exp_filtrado2_matrix),]))
+normalized_exp_filtrado2=affy.scalevalue.exprSet(exp_filtrado2,sc=1)
+normalized_exp_filtrado2_matrix = exprs(normalized_exp_filtrado2)
+c(mean(normalized_exp_filtrado2_matrix),sd(normalized_exp_filtrado2_matrix))
 
 
 
+#########Controlo x Lítio (1 mês de tratamento) ############ 
+test1=rowttests(normalized_exp_filtrado2[normalized_exp_filtrado2$time=="1 month"],"agent")
+test1
+pvalues1= test1$p.value
+pvalues1
+pvalues1Signif= order(test1[test1$p.value<0.01, "p.value"])
+pvalues1Signif
+indices_melhoresGenes=pvalues1Signif[1:25]
+indices_melhoresGenes
+geneFeatNames=featureNames(normalized_exp_filtrado2[indices_melhoresGenes])
+geneNames=unlist(mget(geneFeatNames, illuminaHumanv4SYMBOL))
+geneNames
+geneFunction=unlist(mget(geneFeatNames, illuminaHumanv4GENENAME))
+geneFunction
+
+#######Controlo x Litio (baseline)#########
+test2=rowttests(normalized_exp_filtrado2[normalized_exp_filtrado2$time=="baseline"],"agent")
+test2
+pvalues2= test2$p.value
+pvalues2
+pvalues2Signif= order(test2[test2$p.value<0.01, "p.value"])
+pvalues2Signif
+indices_melhoresGenes2=pvalues2Signif[1:25]
+indices_melhoresGenes2
+geneFeatNames2=featureNames(normalized_exp_filtrado2[indices_melhoresGenes2])
+geneNames2=unlist(mget(geneFeatNames2, illuminaHumanv4SYMBOL))
+geneNames2
+geneFunction2=unlist(mget(geneFeatNames2, illuminaHumanv4GENENAME))
+geneFunction2
+
+#####Responde x Nao responde (baseline e litio)########
+test3=rowttests(normalized_exp_filtrado2[normalized_exp_filtrado2$time=="baseline" & normalized_exp_filtrado2$agent=="lithium"],"other")
+test3
+pvalues3= test3$p.value
+pvalues3
+pvalues3Signif= order(test3[test3$p.value<0.01, "p.value"])
+pvalues3Signif
+indices_melhoresGenes3=pvalues3Signif[1:25]
+indices_melhoresGenes3
+geneFeatNames3=featureNames(normalized_exp_filtrado2[indices_melhoresGenes3])
+geneNames3=unlist(mget(geneFeatNames3, illuminaHumanv4SYMBOL))
+geneNames3
+geneFunction3=unlist(mget(geneFeatNames3, illuminaHumanv4GENENAME))
+geneFunction3
+
+#####Responde x Nao responde (1month e litio)########
+test4=rowttests(normalized_exp_filtrado2[normalized_exp_filtrado2$time=="1 month" & normalized_exp_filtrado2$agent=="lithium"],"other")
+test4
+pvalues4= test4$p.value
+pvalues4
+pvalues4Signif= order(test4[test4$p.value<0.01, "p.value"])
+pvalues4Signif
+indices_melhoresGenes4=pvalues4Signif[1:25]
+indices_melhoresGenes4
+geneFeatNames4=featureNames(normalized_exp_filtrado2[indices_melhoresGenes4])
+geneNames4=unlist(mget(geneFeatNames4, illuminaHumanv4SYMBOL))
+geneNames4
+geneFunction4=unlist(mget(geneFeatNames4, illuminaHumanv4GENENAME))
+geneFunction4
+
+######Baseline x 1 month (Litio)##### 
+
+test5=rowttests(normalized_exp_filtrado2[normalized_exp_filtrado2$agent=="lithium"],"time")
+test5
+pvalues5= test5$p.value
+pvalues5
+pvalues5Signif= order(test5[test5$p.value<0.05, "p.value"])
+pvalues5Signif
+indices_melhoresGenes5=pvalues5Signif[1:25]
+indices_melhoresGenes5
+geneFeatNames5=featureNames(normalized_exp_filtrado2[indices_melhoresGenes5])
+geneNames5=unlist(mget(geneFeatNames5, illuminaHumanv4SYMBOL))
+geneNames5
+geneFunction5=unlist(mget(geneFeatNames5, illuminaHumanv4GENENAME))
+geneFunction5
+
+
+#####Baseline x 1 month (controlo)#####
+
+test6=rowttests(normalized_exp_filtrado2[normalized_exp_filtrado2$agent=="control"],"time")
+test6
+pvalues6= test6$p.value
+pvalues6
+pvalues6Signif= order(test6[test6$p.value<0.05, "p.value"])
+pvalues6Signif
+indices_melhoresGenes6=pvalues6Signif[1:25]
+indices_melhoresGenes6
+geneFeatNames6=featureNames(normalized_exp_filtrado2[indices_melhoresGenes6])
+geneNames6=unlist(mget(geneFeatNames6, illuminaHumanv4SYMBOL))
+geneNames6
+geneFunction6=unlist(mget(geneFeatNames6, illuminaHumanv4GENENAME))
+geneFunction6

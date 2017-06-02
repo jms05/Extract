@@ -21,20 +21,23 @@ knitr::opts_chunk$set(echo = TRUE)
 #install.packages("dendextend")#para por por no heatmap nas linhas
 #install.packages("dendextendRcpp")#para por por no heatmap nas linhas
 #install.packages("d3heatmap")#para fazer o heatmap
-#source("http://bioconductor.org/biocLite.R")
-#biocLite()
+source("http://bioconductor.org/biocLite.R")
+biocLite()
 #biocLite("GEOquery")
 #biocLite("limma")
 #biocLite("genefilter")
 
-#library(Biobase) 
-#library(GEOquery)
-#library('genefilter')
-#library(limma)
-#library(gplots)
-#library(dendextend)#heatmap
-#library(d3heatmap)#heatmap
-#library(matrixStats)
+library(Biobase) 
+library(GEOquery)
+library('genefilter')
+library(limma)
+library(gplots)
+library(dendextend)#heatmap
+library(d3heatmap)#heatmap
+library(matrixStats)
+library(affydata)
+library(affy)
+library(imager)
 ```
 
 # Introdução
@@ -94,6 +97,10 @@ Fazendo um boxplot com o logaritmo de base 2 dos dados de express~o para todas a
 #col = terrain.colors(length(pData(data)$sample), alpha = 0.6)
 #dataBox = log2(exp)
 #boxplot(dataBox, col = col, whiskcol = col, pch = 21, cex = 0.8, xlab = 'Amostras', ylab = 'Intensidades (log2)', notch = TRUE, frame = FALSE)
+#depois descomentar esta a usar a imagem para nao demorar tanto 
+library(imager)
+im<-load.image("Rplot.png")
+plot(im,axes=FALSE)
 ```
 
 
@@ -222,7 +229,6 @@ Com este passo, reduziu-se os dados a utilizar nos seguintes passos para 7671 fe
 
 ```{r , fig.align = 'center', message = FALSE, warning = FALSE}
 hist(rowSds(exp_filtrado),breaks=50,col='mistyrose',xlab = 'Desvio padrão',ylab = 'Frequência',main = NULL)
-abline(v=m*2,col="red",lwd=4,lty=2)
 ```
 
 
