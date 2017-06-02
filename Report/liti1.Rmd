@@ -156,7 +156,7 @@ complete
 incomplete+complete
 ```
 > <p style = 'text-align: justify;'>
-Com a execução do comando anterior verificamos que existem um total de 94080 valores omissos no nosso *DataSet*.
+Com a execução dos comandos anteriores verificamos que existem um total de 784 registos incompletos *DataSet* e 47323 registos completos, fazendo assim um total de 48107, como esperado.
 </p>
 
 #Extração de Conhecimento
