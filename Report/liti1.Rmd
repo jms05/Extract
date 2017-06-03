@@ -378,13 +378,33 @@ LAMP3|ILMN_2170813|1.823372e-03|lysosomal associated membrane protein 3
 
 Table: **Tabela 3** - 25 Genes mais expressivos no teste estatístico entre os grupos de Controlo e Lítio no instante incial.
 
-##Responde x Nao responde (Baseline e Litio)
+##Baseline x 1 mês de tratamento (respondem ao tratamento com lítio)
+
+```{r , fig.align = 'center', message = FALSE, warning = FALSE}
+test3=rowttests(normalized_exp_filtrado2[normalized_exp_filtrado2$other=="responder" & normalized_exp_filtrado2$agent=="lithium"],"time")
+sign_pvalue3=test3[test3$p.value<0.01,]
+pvalues3Signif=sign_pvalue3[order(sign_pvalue3$p.value),]
+nomes3=rownames(pvalues3Signif)
+geneNames3=unlist(mget(nomes3, illuminaHumanv4SYMBOL))
+geneFunction3=unlist(mget(nomes3, illuminaHumanv4GENENAME))
+```
+
+> <p style = 'text-align: justify;'>
+Na seguinte tabela encontram-se os genes com maior evidência estatística de expressão génica diferencial no que diz respeito ao atributo *time* nas condições de resposta e tratamento com lítio. Este teste foi feito com o intuito de perceber, dentro dos indivíduos que foram tratados com lítio e responderam ao tratamento, quais os genes que após 1 mês do tratamento em questão (com lítio) apresentavam diferenças de expressão estatisticamente significativas relativamente à condição inicial (baseline). De facto, constatou-se que respectivos *p-values* (*p-values* < 0.01) permitem rejeitar a hipótese nula, pelo que podemos assumir que os genes dos indivíduos que foram tratados com lítio e responderam ao tratamento são diferencialmente expressos no inicío do tratamento e após um mês do começo do mesmo. 
+</p>
+
+Nome do Gene | Nome da Variável | *p-value* | Função do Gene 
+------------- | ------------- | ------------- | -------------
+FKBP5|ILMN_1778444|0.002436297|FK506 binding protein 5
+LINC00293|ILMN_3311150|0.003073925|long intergenic non-protein coding RNA 293
+CHM|ILMN_1709112|0.003880609|CHM, Rab escort protein 1
+COX15|ILMN_2292696|0.007911662|COX15, cytochrome c oxidase assembly homolog
+GTF2IRD2B|ILMN_2180997|0.009325567|GTF2I repeat domain containing 2B
+
+Table: **Tabela 4** - 5 Genes mais expressivos no teste estatístico entre os grupos de que responderam e não responderam.
 
 ##Responde x Nao responde (1 mês de Tratamento e Litio)
 
-##Baseline x 1 month (Litio)
-
-##Baseline x 1 month (Controlo)
 
 #Clustering de Genes e Amostras
 
