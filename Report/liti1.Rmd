@@ -26,12 +26,16 @@ biocLite()
 #biocLite("GEOquery")
 #biocLite("limma")
 #biocLite("genefilter")
+#biocLite("affydata")
+#biocLite("affy")
+#biocLite("illuminaHumanv4.db")
 
 library(Biobase) 
 library(GEOquery)
 library('genefilter')
 library(limma)
 library(gplots)
+library(illuminaHumanv4.db)# por causa dos nossos genes serem illumina
 library(dendextend)#heatmap
 library(d3heatmap)#heatmap
 library(matrixStats)
@@ -156,6 +160,8 @@ individual | Indivíduos em Análise  | 60 | "Li+OPT_1" "Li+OPT_10"...
 description | Descrição do Sample | 120 | NULL
 time |  Momento em que foi obtida a amostra  | 2 | "1 month" "baseline"
 
+Table: **Tabela 1** - Informação contida no *DataSet* utilizado.
+
 > <p style = 'text-align: justify;'> 
 Resposta dos diferentes grupos, *control* e *lithium* ao tratamento aplicado:
 </p>
@@ -231,10 +237,154 @@ Com este passo, reduziu-se os dados a utilizar nos seguintes passos para 7671 fe
 hist(rowSds(exp_filtrado),breaks=50,col='mistyrose',xlab = 'Desvio padrão',ylab = 'Frequência',main = NULL)
 ```
 
+> <p style = 'text-align: justify;'>
+Aplicação do filtro *Flat Patterns* aos dados originais e criação de um novo *ExpressionSet* para guardar estes dados.
+</p>
 
+```{r , fig.align = 'center', message = FALSE, warning = FALSE}
+exp_filtrado2=data[sds>=2*m,]
+```
 
+> <p style = 'text-align: justify;'>
+Para realizarmos testes de hipóteses paramétricos (t-test) foi necessário normalizar o *ExpressionSet* (exp_filtrado2) utilizado, mantendo os filtros (remoção de valores omissos e aplicação de filtros *"Flat Patterns"*). Para tal efeito foi preciso desenvolver a seguinte função responsável por dado um *ExpressionSet* com casso omissos e os nomes das colunas da matriz a este correpondente sem valores omissos.
+</p>
+```{r funcao, fig.align = 'center', message = FALSE, warning = FALSE}
+getFromExpression <- function(expressionFonte,valuesOK)
+{
+  j=1
+  nomes = featureNames(expressionFonte)
+  indicesValuesOK =c()
+  for(i in 1:length(valuesOK)){
+    nomeOK = valuesOK[i]
+    indices = which( nomes== nomeOK)
+    if(length(indices) > 0){
+      indicesValuesOK[j] = indices
+      j=j+1
+    }  
+  }
+  return(expressionFonte[indicesValuesOK,])
+}
+```
 
-#Análise Expressão Diferencial e  Enriquecimento
+```{r , fig.align = 'center', message = FALSE, warning = FALSE}
+exp_filtrado2_matrix = exprs(exp_filtrado2)
+exp_filtrado2 = getFromExpression(exp_filtrado2,rownames(exp_filtrado2_matrix[complete.cases(exp_filtrado2_matrix),]))
+exp_filtrado2_matrix = scale(exprs(exp_filtrado2))
+c(mean(exp_filtrado2_matrix), sd(exp_filtrado2_matrix))
+phenoData1=phenoData(exp_filtrado2)
+featData1=featureData(exp_filtrado2)
+expData1=experimentData(exp_filtrado2)
+normalized_exp_filtrado2=ExpressionSet(assayData = exp_filtrado2_matrix, phenoData = phenoData1, featureData = featData1, experimentData = expData1)
+c(mean(exprs(normalized_exp_filtrado2)),sd(exprs(normalized_exp_filtrado2)),sum(is.na(exprs(normalized_exp_filtrado2))))
+```
+> <p style = 'text-align: justify;'>
+ O código acima apresentado é resposável pela remoção dos valores omissos e normalização do *ExprecionSet* que será utilizado de agora em diante. Como é possivel de verificar pelo *output* do último comando executado. 
+</p>
+
+#Análise Expressão Diferencial e Enriquecimento
+
+> <p style = 'text-align: justify;'>
+Neste passo foram identificados, através de testes de hipóteses, os 25 genes que apresentavam menor *p-value*, ou seja, os genes cuja evidência estatística da expressão génica diferencial foi mais significativa. Os resultados obtidos foram registados nas seguintes tabelas e organizados segundo o nome do gene, identificador do gene e respetiva função. 
+</p>
+
+##Controlo x Lítio (1 mês de tratamento)
+
+```{r , fig.align = 'center', message = FALSE, warning = FALSE}
+test1=rowttests(normalized_exp_filtrado2[normalized_exp_filtrado2$time=="1 month"],"agent")
+sign_pvalue1=test1[test1$p.value<0.01,]
+pvalues1Signif=sign_pvalue1[order(sign_pvalue1$p.value),]
+nomes1=rownames(pvalues1Signif)[1:25]
+geneNames1=unlist(mget(nomes1, illuminaHumanv4SYMBOL))
+geneFunction1=unlist(mget(nomes1, illuminaHumanv4GENENAME))
+```
+
+> <p style = 'text-align: justify;'>
+Na seguinte tabela encontram-se os 25 genes com maior evidência estatística de expressão génica diferencial no que diz respeito ao atributo "agent". Este teste foi feito com o intuito de perceber se, após 1 mês de tratamento em questão (com lítio), existem diferenças estatisticamente
+significativas na expressão dos genes. De facto, constatou-se que respectivos p-values (p-values < 0.01) permitem rejeitar a hipótese nula, pelo
+que podemos assumir que os genes das amostras em condição de controlo e condição de tratamento com lítio são diferencialmente expressos. Numa primeira análise, isto pode indiciar uma influencia do lítio na expressão destes genes.
+</p>
+
+Nome do Gene | Nome da Variável | *p-value* | Função do Gene 
+------------- | ------------- | ------------- | ------------- 
+GRHL1 | ILMN_1769934 | 7.684359e-05|grainyhead like transcription factor 1
+CES1 |ILMN_2359945  | 1.634422e-04|carboxylesterase 1
+POLI | ILMN_1702218 | 3.172987e-04 |DNA polymerase iota
+CWF19L1| ILMN_1651886 | 3.786476e-04 |CWF19-like 1, cell cycle control (S. pombe)
+NA | ILMN_1905053 |4.822311e-04|NA
+SNHG15 |ILMN_1898124|5.543943e-04|small nucleolar RNA host gene 15
+SIGLEC10| ILMN_1655549|7.699869e-04|sialic acid binding Ig like lectin 10
+BHMT2 | ILMN_2070521|  8.086180e-04| betaine--homocysteine S-methyltransferase 2
+VPS33B | ILMN_1789243 |8.274346e-04|VPS33B, late endosome and lysosome associated
+TSPAN12 | ILMN_1768115 | 8.607727e-04|tetraspanin 12
+MCM3AP  | ILMN_1784766 |8.890522e-04|minichromosome maintenance complex component 3 associated protein
+SNORD91B |  ILMN_3242443|  9.608578e-04|small nucleolar RNA, C/D box 91B
+MICALCL | ILMN_1743232 | 1.147565e-03|MICAL C-terminal like
+NOTCH2 | ILMN_1777845 | 1.270860e-03|notch 2
+NA  | ILMN_3187754 |1.377986e-03|NA
+CPZ |ILMN_1705258 |1.533117e-03|carboxypeptidase Z
+NA | ILMN_1810104|1.730389e-03|NA 
+CALD1  |  ILMN_1730487| 1.752684e-03|caldesmon 1
+NCARD17 | ILMN_3238525|2.002094e-03|caspase recruitment domain family member 17
+GIMAP8 | ILMN_1747305|2.159016e-03|GTPase, IMAP family member 8
+TRPM2 | ILMN_2352380 |2.188820e-03|transient receptor potential cation channel subfamily M member 2
+NCOA4 | ILMN_1773906 |2.199297e-03|nuclear receptor coactivator 4
+SP140L | ILMN_1658858|2.211787e-03|SP140 nuclear body protein like
+PTH | ILMN_2202048 |2.467427e-03|parathyroid hormone
+NA | ILMN_1898268|2.518019e-03|NA
+
+Table: **Tabela 2** -  25 Genes mais expressivos no teste estatístico entre os grupos de Controlo e Lítio após 1 mês de tratamento.
+
+##Controlo x Litio (baseline)
+```{r , fig.align = 'center', message = FALSE, warning = FALSE}
+test2=rowttests(normalized_exp_filtrado2[normalized_exp_filtrado2$time=="baseline"],"agent")
+sign_pvalue2=test2[test2$p.value<0.01,]
+pvalues2Signif=sign_pvalue2[order(sign_pvalue2$p.value),]
+nomes2=rownames(pvalues2Signif)[1:25]
+geneNames2=unlist(mget(nomes2, illuminaHumanv4SYMBOL))
+geneFunction2=unlist(mget(nomes2, illuminaHumanv4GENENAME))
+```
+
+> <p style = 'text-align: justify;'>
+Na seguinte tabela encontram-se os 25 genes com maior evidência estatística de expressão génica diferencial no que diz respeito ao atributo *agent*. Este teste foi feito com o intuito de perceber se existem diferenças estatisticamente significativas na expressão dos genes no início da experiência. De facto, constatou-se que respectivos *p-values* (p-values < 0.01) permitem rejeitar a hipótese nula, pelo que podemos assumir que os genes das amostras em condição de controlo e condição de tratamento com lítio no ínicio do estudo são diferencialmente expressos. Numa primeira análise, isto pode indiciar uma influência do lítio na expressão destes genes. Tendo em conta os genes que obtivemos na tabela anterior, relativos a 1 mês de tratamento, podemos verificar que estes não são os mesmos obtidos na tabela seguinte. Estes resultados suportam a hipótese de que os genes obtidos na tabela anterior possam ser, de facto, influenciados ao nível da sua expressão pelo tratamento com lítio, uma vez que estes não apresentavam a maior diferença de expressão, comparativamente a outros genes, no início da experiência. 
+</p>
+
+Nome do Gene | Nome da Variável | *p-value* | Função do Gene 
+------------- | ------------- | ------------- | -------------
+SLC9B1|ILMN_1757606|1.924285e-05|solute carrier family 9 member B1
+TAGLN2|ILMN_1766539|2.966484e-05|transgelin 2
+FAAP20|ILMN_3182422|4.964620e-05|Fanconi anemia core complex associated protein 20
+NA|ILMN_1810848|1.461253e-04|NA
+EZR|ILMN_1795937|2.174945e-04|ezrin
+FRA10AC1|ILMN_2375141|3.043571e-04|fragile site, folic acid type, rare, fra(10)(q23.3) or fra(10)(q24.2) candidate 1
+NA|ILMN_1661043|3.068594e-04|NA
+NA|ILMN_1902604|3.080951e-04|NA
+RGS20|ILMN_1738558|3.989817e-04|regulator of G-protein signaling 20
+STAT2|ILMN_1690921|7.059056e-04|signal transducer and activator of transcription 2
+HIP1|ILMN_1701403|7.143332e-04|huntingtin interacting protein 1
+NA|ILMN_1652436|8.891923e-04| NA
+SNAPIN|ILMN_1799969|1.015630e-03|SNAP associated protein
+PILRB|ILMN_1723984|1.051413e-03|paired immunoglobin-like type 2 receptor beta
+GMCL1P1|ILMN_1778105|1.142194e-03|germ cell-less, spermatogenesis associated 1 pseudogene 1
+WARS2|ILMN_2323979|1.230674e-03|tryptophanyl tRNA synthetase 2, mitochondrial
+NA|ILMN_1675258|1.236474e-03| NA 
+SUMF2|ILMN_2345872| 1.287137e-03|sulfatase modifying factor 2
+WASF2|ILMN_1671837|1.376350e-03|WAS protein family member 2
+NA|ILMN_1689699|1.481865e-03|NA 
+ALOX12P2|ILMN_1735987| 1.503897e-03|arachidonate 12-lipoxygenase pseudogene 2
+RAB5B|ILMN_1752582|1.552359e-03|RAB5B, member RAS oncogene family
+RFX3|ILMN_1779488|1.576887e-03|regulatory factor X3
+NA|ILMN_1721926|1.669918e-03| NA
+LAMP3|ILMN_2170813|1.823372e-03|lysosomal associated membrane protein 3
+
+Table: **Tabela 3** - 25 Genes mais expressivos no teste estatístico entre os grupos de Controlo e Lítio no instante incial.
+
+##Responde x Nao responde (Baseline e Litio)
+
+##Responde x Nao responde (1 mês de Tratamento e Litio)
+
+##Baseline x 1 month (Litio)
+
+##Baseline x 1 month (Controlo)
 
 #Clustering de Genes e Amostras
 
