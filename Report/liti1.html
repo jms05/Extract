@@ -157,7 +157,7 @@ $(document).ready(function () {
 <li><a href="#controlo-x-litio-1-mes-de-tratamento"><span class="toc-section-number">3.1</span> Controlo x Lítio (1 mês de tratamento)</a></li>
 <li><a href="#controlo-x-litio-baseline"><span class="toc-section-number">3.2</span> Controlo x Litio (baseline)</a></li>
 <li><a href="#baseline-x-1-mes-de-tratamento-respondem-ao-tratamento-com-litio"><span class="toc-section-number">3.3</span> Baseline x 1 mês de tratamento (respondem ao tratamento com lítio)</a></li>
-<li><a href="#responde-x-nao-responde-1-mes-de-tratamento-e-litio"><span class="toc-section-number">3.4</span> Responde x Nao responde (1 mês de Tratamento e Litio)</a></li>
+<li><a href="#responde-x-nao-responde-1-mes-de-tratamento-e-litio"><span class="toc-section-number">3.4</span> Responde x Não responde (1 mês de Tratamento e Litio)</a></li>
 </ul></li>
 <li><a href="#clustering-de-genes-e-amostras"><span class="toc-section-number">4</span> Clustering de Genes e Amostras</a></li>
 <li><a href="#analise-preditiva"><span class="toc-section-number">5</span> Análise Preditiva</a></li>
@@ -928,7 +928,187 @@ Na seguinte tabela encontram-se os genes com maior evidência estatística de ex
 </table>
 </div>
 <div id="responde-x-nao-responde-1-mes-de-tratamento-e-litio" class="section level2">
-<h2><span class="header-section-number">3.4</span> Responde x Nao responde (1 mês de Tratamento e Litio)</h2>
+<h2><span class="header-section-number">3.4</span> Responde x Não responde (1 mês de Tratamento e Litio)</h2>
+<blockquote>
+<p style="text-align: justify;">
+Na seguinte tabela encontram-se os 25 genes com maior evidência estatística de expressão génica diferencial no que diz respeito ao atributo <em>other</em> após 1 mês de tratamento com lítio. Este teste foi feito com o intuito de perceber, dentro dos indivíduos que foram tratados com lítio durante 1 mês, quais os genes que apresentavam as maiores diferenças de expressão quando comparados os indivíduos que respondem e não respondem ao tratamento. A importância inside na possibilidade da resposta dos pacientes ao tratamento com lítio possa estar associada à regulação da expressão de alguns genes tornando-os, assim possíveis alvos para aumentar a eficácia do tratamento.
+</p>
+</blockquote>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">test4=<span class="kw">rowttests</span>(normalized_exp_filtrado2[normalized_exp_filtrado2$time==<span class="st">&quot;1 month&quot;</span> &amp;<span class="st"> </span>normalized_exp_filtrado2$agent==<span class="st">&quot;lithium&quot;</span>],<span class="st">&quot;other&quot;</span>)
+sign_pvalue4=test4[test4$p.value&lt;<span class="fl">0.01</span>,]
+pvalues4Signif=sign_pvalue4[<span class="kw">order</span>(sign_pvalue4$p.value),]
+nomes4=<span class="kw">rownames</span>(pvalues4Signif)[<span class="dv">1</span>:<span class="dv">25</span>]
+geneNames4=<span class="kw">unlist</span>(<span class="kw">mget</span>(nomes4, illuminaHumanv4SYMBOL))
+geneFunction4=<span class="kw">unlist</span>(<span class="kw">mget</span>(nomes4, illuminaHumanv4GENENAME))</code></pre></div>
+<table style="width:78%;">
+<caption><strong>Tabela 5</strong> - 25 Genes mais expressivos no teste estatístico entre os grupos de que responderam e não responderam após 1 mês de tratamento.</caption>
+<colgroup>
+<col width="19%"></col>
+<col width="19%"></col>
+<col width="19%"></col>
+<col width="19%"></col>
+</colgroup>
+<thead>
+<tr class="header">
+<th>Nome do Gene</th>
+<th>Nome da Variável</th>
+<th><em>p-value</em></th>
+<th>Função do Gene</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>KIAA1191</td>
+<td>ILMN_2376133</td>
+<td>1.196106e-05</td>
+<td>KIAA1191</td>
+</tr>
+<tr class="even">
+<td>SLC9A3R1</td>
+<td>ILMN_1680925</td>
+<td>1.222005e-05</td>
+<td>SLC9A3 regulator 1</td>
+</tr>
+<tr class="odd">
+<td>DESI1</td>
+<td>ILMN_1737580</td>
+<td>1.255400e-05</td>
+<td>desumoylating isopeptidase 1</td>
+</tr>
+<tr class="even">
+<td>CYB5A</td>
+<td>ILMN_2312194</td>
+<td>2.853473e-05</td>
+<td>cytochrome b5 type A</td>
+</tr>
+<tr class="odd">
+<td>RNF182</td>
+<td>ILMN_3243112</td>
+<td>8.367740e-05</td>
+<td>ring finger protein 182</td>
+</tr>
+<tr class="even">
+<td>MIR221</td>
+<td>ILMN_3310326</td>
+<td>1.990182e-04</td>
+<td>microRNA 221</td>
+</tr>
+<tr class="odd">
+<td>FHL2</td>
+<td>ILMN_2355831</td>
+<td>2.218453e-04</td>
+<td>four and a half LIM domains 2</td>
+</tr>
+<tr class="even">
+<td>BNIP3L</td>
+<td>ILMN_2045419</td>
+<td>2.890585e-04</td>
+<td>BCL2 interacting protein 3 like</td>
+</tr>
+<tr class="odd">
+<td>NA</td>
+<td>ILMN_1701314</td>
+<td>3.093227e-044</td>
+<td>NA</td>
+</tr>
+<tr class="even">
+<td>IFT20</td>
+<td>ILMN_3235216</td>
+<td>5.464933e-04</td>
+<td>intraflagellar transport 20</td>
+</tr>
+<tr class="odd">
+<td>PRCC</td>
+<td>ILMN_1802843</td>
+<td>6.224594e-04</td>
+<td>papillary renal cell carcinoma (translocation-associated)</td>
+</tr>
+<tr class="even">
+<td>SET</td>
+<td>ILMN_3210917</td>
+<td>6.862697e-04</td>
+<td>SET nuclear proto-oncogene</td>
+</tr>
+<tr class="odd">
+<td>PRSS57</td>
+<td>ILMN_1673605</td>
+<td>8.264914e-04</td>
+<td>protease, serine 57</td>
+</tr>
+<tr class="even">
+<td>CYBRD1</td>
+<td>ILMN_1712305</td>
+<td>8.664224e-04</td>
+<td>cytochrome b reductase 1</td>
+</tr>
+<tr class="odd">
+<td>NA</td>
+<td>ILMN_1907834</td>
+<td>9.189767e-04</td>
+<td>NA</td>
+</tr>
+<tr class="even">
+<td>ANKRD9</td>
+<td>ILMN_2048607</td>
+<td>9.999131e-04</td>
+<td>ankyrin repeat domain 9</td>
+</tr>
+<tr class="odd">
+<td>BTF3</td>
+<td>ILMN_1659762</td>
+<td>1.003584e-03</td>
+<td>basic transcription factor 3</td>
+</tr>
+<tr class="even">
+<td>BUD13</td>
+<td>ILMN_1749210</td>
+<td>1.005300e-03</td>
+<td>BUD13 homolog</td>
+</tr>
+<tr class="odd">
+<td>DBNL</td>
+<td>ILMN_2376289</td>
+<td>1.024758e-03</td>
+<td>drebrin like</td>
+</tr>
+<tr class="even">
+<td>ADRM1</td>
+<td>ILMN_2389013</td>
+<td>1.156891e-03</td>
+<td>adhesion regulating molecule 1</td>
+</tr>
+<tr class="odd">
+<td>HPS1</td>
+<td>ILMN_1741483</td>
+<td>2.121442e-03</td>
+<td>HPS1, biogenesis of lysosomal organelles complex 3 subunit 1</td>
+</tr>
+<tr class="even">
+<td>NA</td>
+<td>ILMN_1740678</td>
+<td>2.592953e-03</td>
+<td>NA</td>
+</tr>
+<tr class="odd">
+<td>CDC26</td>
+<td>ILMN_2210837</td>
+<td>2.729218e-03</td>
+<td>cell division cycle 26</td>
+</tr>
+<tr class="even">
+<td>STRADA</td>
+<td>ILMN_2315694</td>
+<td>2.899831e-03</td>
+<td>STE20-related kinase adaptor alpha</td>
+</tr>
+<tr class="odd">
+<td>KIAA0355</td>
+<td>ILMN_1765696</td>
+<td>3.068808e-03</td>
+<td>KIAA0355</td>
+</tr>
+</tbody>
+</table>
 </div>
 </div>
 <div id="clustering-de-genes-e-amostras" class="section level1">

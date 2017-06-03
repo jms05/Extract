@@ -403,8 +403,50 @@ GTF2IRD2B|ILMN_2180997|0.009325567|GTF2I repeat domain containing 2B
 
 Table: **Tabela 4** - 5 Genes mais expressivos no teste estatístico entre os grupos de que responderam e não responderam.
 
-##Responde x Nao responde (1 mês de Tratamento e Litio)
+##Responde x Não responde (1 mês de Tratamento e Litio)
 
+> <p style = 'text-align: justify;'>
+Na seguinte tabela encontram-se os 25 genes com maior evidência estatística de expressão génica diferencial no que diz respeito ao atributo *other* após 1 mês de tratamento com lítio. Este teste foi feito com o intuito de perceber, dentro dos indivíduos que foram tratados com lítio durante 1 mês, quais os genes que apresentavam as maiores diferenças de expressão quando comparados os indivíduos que respondem e não respondem ao tratamento. A importância inside na possibilidade da resposta dos pacientes ao tratamento com lítio possa estar associada à regulação da expressão de alguns genes tornando-os, assim possíveis alvos para aumentar a eficácia do tratamento. 
+</p>
+
+```{r , fig.align = 'center', message = FALSE, warning = FALSE}
+test4=rowttests(normalized_exp_filtrado2[normalized_exp_filtrado2$time=="1 month" & normalized_exp_filtrado2$agent=="lithium"],"other")
+sign_pvalue4=test4[test4$p.value<0.01,]
+pvalues4Signif=sign_pvalue4[order(sign_pvalue4$p.value),]
+nomes4=rownames(pvalues4Signif)[1:25]
+geneNames4=unlist(mget(nomes4, illuminaHumanv4SYMBOL))
+geneFunction4=unlist(mget(nomes4, illuminaHumanv4GENENAME))
+```
+
+Nome do Gene | Nome da Variável | *p-value* | Função do Gene 
+------------- | ------------- | ------------- | -------------
+KIAA1191|ILMN_2376133|1.196106e-05|KIAA1191
+SLC9A3R1|ILMN_1680925|1.222005e-05|SLC9A3 regulator 1
+DESI1|ILMN_1737580|1.255400e-05|desumoylating isopeptidase 1
+CYB5A|ILMN_2312194|2.853473e-05|cytochrome b5 type A
+RNF182|ILMN_3243112|8.367740e-05|ring finger protein 182
+MIR221|ILMN_3310326|1.990182e-04|microRNA 221
+FHL2|ILMN_2355831|2.218453e-04|four and a half LIM domains 2
+BNIP3L|ILMN_2045419|2.890585e-04|BCL2 interacting protein 3 like
+NA|ILMN_1701314|3.093227e-044|NA
+IFT20|ILMN_3235216|5.464933e-04|intraflagellar transport 20
+PRCC|ILMN_1802843|6.224594e-04|papillary renal cell carcinoma (translocation-associated)
+SET|ILMN_3210917|6.862697e-04| SET nuclear proto-oncogene
+PRSS57|ILMN_1673605|8.264914e-04|protease, serine 57
+CYBRD1|ILMN_1712305|8.664224e-04|cytochrome b reductase 1
+NA|ILMN_1907834|9.189767e-04|NA 
+ANKRD9|ILMN_2048607|9.999131e-04|ankyrin repeat domain 9
+BTF3|ILMN_1659762|1.003584e-03| basic transcription factor 3
+BUD13|ILMN_1749210|1.005300e-03|BUD13 homolog
+DBNL|ILMN_2376289| 1.024758e-03|drebrin like
+ADRM1|ILMN_2389013|1.156891e-03|adhesion regulating molecule 1
+HPS1|ILMN_1741483|2.121442e-03|HPS1, biogenesis of lysosomal organelles complex 3 subunit 1
+NA|ILMN_1740678| 2.592953e-03|NA
+CDC26|ILMN_2210837|2.729218e-03|cell division cycle 26
+STRADA|ILMN_2315694|2.899831e-03|STE20-related kinase adaptor alpha
+KIAA0355|ILMN_1765696|3.068808e-03| KIAA0355
+
+Table: **Tabela 5** - 25 Genes mais expressivos no teste estatístico entre os grupos de que responderam e não responderam após 1 mês de tratamento.
 
 #Clustering de Genes e Amostras
 
