@@ -155,8 +155,8 @@ $(document).ready(function () {
 </ul></li>
 <li><a href="#analise-expressao-diferencial-e-enriquecimento"><span class="toc-section-number">3</span> Análise Expressão Diferencial e Enriquecimento</a><ul>
 <li><a href="#controlo-x-litio-1-mes-de-tratamento"><span class="toc-section-number">3.1</span> Controlo x Lítio (1 mês de tratamento)</a></li>
-<li><a href="#controlo-x-litio-baseline"><span class="toc-section-number">3.2</span> Controlo x Litio (baseline)</a></li>
-<li><a href="#baseline-x-1-mes-de-tratamento-respondem-ao-tratamento-com-litio"><span class="toc-section-number">3.3</span> Baseline x 1 mês de tratamento (respondem ao tratamento com lítio)</a></li>
+<li><a href="#controlo-x-litio-baseline"><span class="toc-section-number">3.2</span> Controlo x Litio (<em>Baseline</em>)</a></li>
+<li><a href="#baseline-x-1-mes-de-tratamento-respondem-ao-tratamento-com-litio"><span class="toc-section-number">3.3</span> <em>Baseline</em> x 1 mês de tratamento (respondem ao tratamento com lítio)</a></li>
 <li><a href="#responde-x-nao-responde-1-mes-de-tratamento-e-litio"><span class="toc-section-number">3.4</span> Responde x Não responde (1 mês de Tratamento e Litio)</a></li>
 </ul></li>
 <li><a href="#clustering-de-genes-e-amostras"><span class="toc-section-number">4</span> Clustering de Genes e Amostras</a></li>
@@ -682,7 +682,7 @@ Na seguinte tabela encontram-se os 25 genes com maior evidência estatística de
 </table>
 </div>
 <div id="controlo-x-litio-baseline" class="section level2">
-<h2><span class="header-section-number">3.2</span> Controlo x Litio (baseline)</h2>
+<h2><span class="header-section-number">3.2</span> Controlo x Litio (<em>Baseline</em>)</h2>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">test2=<span class="kw">rowttests</span>(normalized_exp_filtrado2[normalized_exp_filtrado2$time==<span class="st">&quot;baseline&quot;</span>],<span class="st">&quot;agent&quot;</span>)
 sign_pvalue2=test2[test2$p.value&lt;<span class="fl">0.01</span>,]
 pvalues2Signif=sign_pvalue2[<span class="kw">order</span>(sign_pvalue2$p.value),]
@@ -865,7 +865,7 @@ Na seguinte tabela encontram-se os 25 genes com maior evidência estatística de
 </table>
 </div>
 <div id="baseline-x-1-mes-de-tratamento-respondem-ao-tratamento-com-litio" class="section level2">
-<h2><span class="header-section-number">3.3</span> Baseline x 1 mês de tratamento (respondem ao tratamento com lítio)</h2>
+<h2><span class="header-section-number">3.3</span> <em>Baseline</em> x 1 mês de tratamento (respondem ao tratamento com lítio)</h2>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">test3=<span class="kw">rowttests</span>(normalized_exp_filtrado2[normalized_exp_filtrado2$other==<span class="st">&quot;responder&quot;</span> &amp;<span class="st"> </span>normalized_exp_filtrado2$agent==<span class="st">&quot;lithium&quot;</span>],<span class="st">&quot;time&quot;</span>)
 sign_pvalue3=test3[test3$p.value&lt;<span class="fl">0.01</span>,]
 pvalues3Signif=sign_pvalue3[<span class="kw">order</span>(sign_pvalue3$p.value),]

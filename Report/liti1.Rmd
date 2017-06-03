@@ -334,7 +334,7 @@ NA | ILMN_1898268|2.518019e-03|NA
 
 Table: **Tabela 2** -  25 Genes mais expressivos no teste estatístico entre os grupos de Controlo e Lítio após 1 mês de tratamento.
 
-##Controlo x Litio (baseline)
+##Controlo x Litio (*Baseline*)
 ```{r , fig.align = 'center', message = FALSE, warning = FALSE}
 test2=rowttests(normalized_exp_filtrado2[normalized_exp_filtrado2$time=="baseline"],"agent")
 sign_pvalue2=test2[test2$p.value<0.01,]
@@ -378,7 +378,7 @@ LAMP3|ILMN_2170813|1.823372e-03|lysosomal associated membrane protein 3
 
 Table: **Tabela 3** - 25 Genes mais expressivos no teste estatístico entre os grupos de Controlo e Lítio no instante incial.
 
-##Baseline x 1 mês de tratamento (respondem ao tratamento com lítio)
+##*Baseline* x 1 mês de tratamento (respondem ao tratamento com lítio)
 
 ```{r , fig.align = 'center', message = FALSE, warning = FALSE}
 test3=rowttests(normalized_exp_filtrado2[normalized_exp_filtrado2$other=="responder" & normalized_exp_filtrado2$agent=="lithium"],"time")
