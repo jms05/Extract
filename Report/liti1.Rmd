@@ -3,6 +3,7 @@ title: Extração Conheciento Bases Dados Biológicas
    <br />Bipolar Disorder and Response to Lithium
 author: "Catarina Sousa pg32934 | Davide Lagoa pg31552 | João Silva a72023 <br /> José Morais pg32943 | Marta Moreno pg32847"
 date: '`r format(Sys.Date(), "%d-%m-%Y")`'
+bibliography: Referencias.bibtex
 output:
   html_document:
     css: tableContents.css
@@ -20,18 +21,23 @@ knitr::opts_chunk$set(echo = TRUE)
 #install.packages("dendextend")#para por por no heatmap nas linhas
 #install.packages("dendextendRcpp")#para por por no heatmap nas linhas
 #install.packages("d3heatmap")#para fazer o heatmap
-#source("http://bioconductor.org/biocLite.R")
-#biocLite()
+source("http://bioconductor.org/biocLite.R")
+biocLite()
 #biocLite("GEOquery")
 #biocLite("limma")
+#biocLite("genefilter")
 
-#library(Biobase) 
-#library(GEOquery)
-#library('genefilter')
-#library(limma)
-#library(gplots)
-#library(dendextend)#heatmap
-#library(d3heatmap)#heatmap
+library(Biobase) 
+library(GEOquery)
+library('genefilter')
+library(limma)
+library(gplots)
+library(dendextend)#heatmap
+library(d3heatmap)#heatmap
+library(matrixStats)
+library(affydata)
+library(affy)
+library(imager)
 ```
 
 # Introdução
@@ -45,7 +51,7 @@ knitr::opts_chunk$set(echo = TRUE)
 > <p style = 'text-align: justify;'> Para o grupo *Li + OPT*, 62 genes apresentaram indução diferencial entre os pacientes que responderam ao tratamento e os que não responderam ao tratamento. Os pacientes do grupo *Li + OPT* que responderam ao tratamento apresentavam padrões distintos que não foram observados nos pacientes do grupo *OPT* com resposta ao tratamento, sendo que estes últimos eram mais parecidos com os pacientes do grupo *Li + OPT* sem resposta ao tratamento.
 </p>
 
-> <p style = 'text-align: justify;'> Também foram realizados **testes utilizando RT-PCR** em tempo real de certos genes, tendo-se verificado que os resultados desta análise foram **similares aos obtidos com microarrays**, com os pacientes *Li + OPT* com resposta ao tratamento a demonstrarem uma maior indução desses genes do que os outros grupos. No entanto, com a exceção do gene *BCL2L1*, os resultados não foram estatisticamente significativos, o que corrobora o facto de que nos estudos com *microarrays* a maior diferença foi observada para *BCL2L1*.
+> <p style = 'text-align: justify;'> Também foram realizados **testes utilizando RT-PCR** em tempo real de certos genes, tendo-se verificado que os resultados desta análise foram **similares aos obtidos com microarrays**, com os pacientes *Li + OPT* com resposta ao tratamento a demonstrarem uma maior indução desses genes do que os outros grupos. No entanto, com a exceção do gene *BCL2L1*, os resultados não foram estatisticamente significativos, o que corrobora o facto de que nos estudos com *microarrays* a maior diferença foi observada para *BCL2L1* [@beech2014gene].
 </p>
 
 
@@ -81,6 +87,20 @@ Conversão do *DataSet* para uma matiz numérica, contendo as *samples* nas colu
 exp = exprs(data)
 class(exp)
 exp[5:15,1:5]
+```
+
+> <p style = 'text-align: justify;'>
+Fazendo um boxplot com o logaritmo de base 2 dos dados de express~o para todas as amostras facilmente verificamos a escala e distribuiãcão dos dados. As caixas apresentam forma e centro semelhantes entre amostras, indicando que os dados de expressão já normalizados, estes dados apesar de normalizados não podem ser utilizados na análise pois ainda possuem valores omissos.
+</p>
+
+```{r boxplot, fig.width = 10, fig.align = 'center',  message = FALSE, warning = FALSE}
+#col = terrain.colors(length(pData(data)$sample), alpha = 0.6)
+#dataBox = log2(exp)
+#boxplot(dataBox, col = col, whiskcol = col, pch = 21, cex = 0.8, xlab = 'Amostras', ylab = 'Intensidades (log2)', notch = TRUE, frame = FALSE)
+#depois descomentar esta a usar a imagem para nao demorar tanto 
+library(imager)
+im<-load.image("Rplot.png")
+plot(im,axes=FALSE)
 ```
 
 
@@ -140,6 +160,15 @@ time |  Momento em que foi obtida a amostra  | 2 | "1 month" "baseline"
 Resposta dos diferentes grupos, *control* e *lithium* ao tratamento aplicado:
 </p>
 
+```{r , message = FALSE, warning = FALSE,include=FALSE}
+data_antes = data[,data$time=="baseline"]
+data_depois = data[,data$time=="1 month"]
+
+
+addmargins(table(data_antes$agent,data_antes$other))
+addmargins(table(data_depois$agent,data_depois$other))
+```
+
 ```{r , message = FALSE, warning = FALSE}
 addmargins(table(data$agent,data$other))
 ```
@@ -149,23 +178,67 @@ Verificar a existência registos com valores omissos *NA's* no *DataSet* :
 </p>
 
 ```{r NAs, message = FALSE, warning = FALSE}
-incomplete = sum(!complete.cases(exp))
-incomplete
-complete = sum(complete.cases(exp))
-complete
-incomplete+complete
+divisaoCI = c(sum(!complete.cases(exp)),sum(complete.cases(exp)))
+divisaoCI
+sum(divisaoCI)
 ```
 > <p style = 'text-align: justify;'>
-Com a execução dos comandos anteriores verificamos que existem um total de 784 registos incompletos *DataSet* e 47323 registos completos, fazendo assim um total de 48107, como esperado.
+Com a execução dos comandos anteriores verificamos que existem um total de 784 registos incompletos *DataSet* e 47323 registos completos, fazendo assim um total de 48107, como esperado. De forma a tornar possÌvel a análise dos dados, procedeu-se à remoção dos valores omissos.  
+</p>
+```{r , message = FALSE, warning = FALSE}
+exp_complete=na.exclude(exp)
+dim(exp_complete)
+```
+> <p style = 'text-align: justify;'>
+Removendo os casos imcompletos verificamos que como suposto a dimenção do *DataSet* foi reduzido em 784.
+</p>
+> <p style = 'text-align: justify;'>
+Para verificar se os nossos dados seguiam uma distribuição normal (0,1), calculámos a mèdia e desvio padrão dos dados do nosso 
+*DataSet* com os seguintes comandos: 
+</p>
+```{r , message = FALSE, warning = FALSE}
+c(mean(exp_complete),sd(exp_complete))
+```
+> <p style = 'text-align: justify;'>
+com isto verificamos que os nosso dados não seguem uma distribuição normal (0,1). Pelo que se torna necessário normalizar-los recorrendo aos seguintes comandos: 
 </p>
 
-#Extração de Conhecimento
+```{r , message = FALSE, warning = FALSE}
+exp_norm=scale(exp_complete) 
+c(mean(exp_norm),sd(exp_norm))
+```
+> <p style = 'text-align: justify;'>
+agora os nosso dados seguem aproximadamente uma distribuição normal (0,1). Pelo que a partir de agora serão estes os dados a utilizar.
+</p>
 
-##Apresentação Pipeline
+> <p style = 'text-align: justify;'>
+De seguida, procurou-se remover os genes que possuiam valores pouco dispares ao longo das amostras, uma vez que não apresentam variabilidade significante para a distinção dos grupos amostrais.Para tal, procedeu-se seleção dos genes cujo desvio padrão dos valores de expressão ao longo das amostras è duas vezes superior do que a mediana dos desvios padrão de todos os genes.
+</p>
 
-##Análise Expressão Diferencial e  Enriquecimento
+```{r , fig.align = 'center', message = FALSE, warning = FALSE}
+sds=rowSds(exp_norm)
+m=median(sds)
+hist(sds,breaks=50,col='mistyrose',xlab = 'Desvio padrão',ylab = 'Frequência',main = NULL)
+abline(v=m*2,col="red",lwd=4,lty=2)
+exp_filtrado=exp_complete[sds>=2*m,]
+dim(exp_filtrado)
+```
+> <p style = 'text-align: justify;'>
+Com este passo, reduziu-se os dados a utilizar nos seguintes passos para 7671 features.
+</p>
 
-##Análise Preditiva
+```{r , fig.align = 'center', message = FALSE, warning = FALSE}
+hist(rowSds(exp_filtrado),breaks=50,col='mistyrose',xlab = 'Desvio padrão',ylab = 'Frequência',main = NULL)
+```
+
+
+
+
+#Análise Expressão Diferencial e  Enriquecimento
+
+#Clustering de Genes e Amostras
+
+#Análise Preditiva
 
 #Resultados Obtidos
 
@@ -173,22 +246,4 @@ Com a execução dos comandos anteriores verificamos que existem um total de 784
 
 #Conclusão
 
-[//]: # ## R Markdown
-
-[//]: #This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
-
-[//]: #When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
-
-[//]: #```{r cars}
-[//]: #summary(cars)
-[//]: #```
-
-[//]: ### Including Plots
-
-[//]: #You can also embed plots, for example:
-
-[//]: #```{r pressure, echo=FALSE}
-[//]: #plot(pressure)
-[//]: #```
-
-[//]: #Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+#Referências

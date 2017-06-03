@@ -116,10 +116,16 @@ exp_filtrado2=data[sds>=2*m,]
 #######Análise de expressão diferencial e Enriquecimento#######
 biocLite("affydata")
 biocLite("affy")
+<<<<<<< HEAD
 biocLite("affyPLM")
 library(affydata)
 library(affy)
 library(affyPLM)
+=======
+library(affydata)
+library(affy)
+
+>>>>>>> 0e15e90cf70421776e1fa0ec23f5e0eb4a6c4f07
 ###### Para realizarmos testes de hipóteses paramétricos (t-test) precisamos
 #de normalizar o nosso ExpressionSet, mantendo os filtros (remoção de NA e aplicação de filtros "Flat Patterns")
 getFromExpression <- function(expressionFonte,valuesOK)
@@ -143,6 +149,7 @@ getFromExpression <- function(expressionFonte,valuesOK)
 
 exp_filtrado2_matrix = exprs(exp_filtrado2)
 exp_filtrado2 = getFromExpression(exp_filtrado2,rownames(exp_filtrado2_matrix[complete.cases(exp_filtrado2_matrix),]))
+<<<<<<< HEAD
 exp_filtrado2_matrix = scale(exprs(exp_filtrado2))
 sum(is.na(exp_filtrado2_matrix))
 mean(exp_filtrado2_matrix)
@@ -213,6 +220,43 @@ geneFunction2
 #unique(as.data.frame(table(nomes2, geneNames2))[2])
 #unique(as.data.frame(table(nomes2, geneFunction2))[2])
 #c(unique(as.data.frame(table(nomes2, geneNames2))[2]), unique(as.data.frame(table(nomes1, geneNames1))[2]))
+=======
+normalized_exp_filtrado2=affy.scalevalue.exprSet(exp_filtrado2,sc=1)
+normalized_exp_filtrado2_matrix = exprs(normalized_exp_filtrado2)
+c(mean(normalized_exp_filtrado2_matrix),sd(normalized_exp_filtrado2_matrix))
+
+
+
+#########Controlo x Lítio (1 mês de tratamento) ############ 
+test1=rowttests(normalized_exp_filtrado2[normalized_exp_filtrado2$time=="1 month"],"agent")
+test1
+pvalues1= test1$p.value
+pvalues1
+pvalues1Signif= order(test1[test1$p.value<0.01, "p.value"])
+pvalues1Signif
+indices_melhoresGenes=pvalues1Signif[1:25]
+indices_melhoresGenes
+geneFeatNames=featureNames(normalized_exp_filtrado2[indices_melhoresGenes])
+geneNames=unlist(mget(geneFeatNames, illuminaHumanv4SYMBOL))
+geneNames
+geneFunction=unlist(mget(geneFeatNames, illuminaHumanv4GENENAME))
+geneFunction
+
+#######Controlo x Litio (baseline)#########
+test2=rowttests(normalized_exp_filtrado2[normalized_exp_filtrado2$time=="baseline"],"agent")
+test2
+pvalues2= test2$p.value
+pvalues2
+pvalues2Signif= order(test2[test2$p.value<0.01, "p.value"])
+pvalues2Signif
+indices_melhoresGenes2=pvalues2Signif[1:25]
+indices_melhoresGenes2
+geneFeatNames2=featureNames(normalized_exp_filtrado2[indices_melhoresGenes2])
+geneNames2=unlist(mget(geneFeatNames2, illuminaHumanv4SYMBOL))
+geneNames2
+geneFunction2=unlist(mget(geneFeatNames2, illuminaHumanv4GENENAME))
+geneFunction2
+>>>>>>> 0e15e90cf70421776e1fa0ec23f5e0eb4a6c4f07
 
 #####Responde x Nao responde (baseline e litio)########
 test3=rowttests(normalized_exp_filtrado2[normalized_exp_filtrado2$time=="baseline" & normalized_exp_filtrado2$agent=="lithium"],"other")
