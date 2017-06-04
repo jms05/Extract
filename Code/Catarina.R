@@ -209,70 +209,54 @@ nomes2=rownames(pvalues2Signif)[1:25]
 geneNames2=unlist(mget(nomes2, illuminaHumanv4SYMBOL))
 geneFunction2=unlist(mget(nomes2, illuminaHumanv4GENENAME))
 geneFunction2
-#unique(as.data.frame(table(nomes2, geneNames2))[1])
-#unique(as.data.frame(table(nomes2, geneNames2))[2])
-#unique(as.data.frame(table(nomes2, geneFunction2))[2])
-#c(unique(as.data.frame(table(nomes2, geneNames2))[2]), unique(as.data.frame(table(nomes1, geneNames1))[2]))
 
-#####Responde x Nao responde (baseline e litio)########
-test3=rowttests(normalized_exp_filtrado2[normalized_exp_filtrado2$time=="baseline" & normalized_exp_filtrado2$agent=="lithium"],"other")
+#####Baseline x 1 mês de tratamento (que respondem ao tratamento com lítio)########
+#Na seguinte tabela encontram-se os genes com maior evidência estatística de expressão génica
+#diferencial no que diz respeito ao atributo "time" nas condições de resposta e tratamento com lítio. 
+#Este teste foi feito com o intuito de perceber, dentro dos indivíduos que foram tratados com lítio e responderam ao tratamento,
+#quais os genes que após 1 mês do tratamento em questão (com lítio) apresentavam diferenças de expressão estatisticamente significativas
+#relativamente à condição inicial (baseline). 
+#De facto, constatou-se que respectivos p-values (p-values < 0.01) permitem rejeitar a hipótese nula, pelo
+#que podemos assumir que os genes dos indivíduos que foram tratados com lítio e responderam ao tratamento são diferencialmente expressos
+#no inicío do tratamento e após um mês do começo do mesmo.    
+
+test3=rowttests(normalized_exp_filtrado2[normalized_exp_filtrado2$other=="responder" & normalized_exp_filtrado2$agent=="lithium"],"time")
 test3
-pvalues3= test3$p.value
-pvalues3
-pvalues3Signif= order(test3[test3$p.value<0.01, "p.value"])
-pvalues3Signif
-indices_melhoresGenes3=pvalues3Signif[1:25]
-indices_melhoresGenes3
-geneFeatNames3=featureNames(normalized_exp_filtrado2[indices_melhoresGenes3])
-geneNames3=unlist(mget(geneFeatNames3, illuminaHumanv4SYMBOL))
+sign_pvalue3=test3[test3$p.value<0.01,]
+sign_pvalue3
+pvalues3Signif=sign_pvalue3[order(sign_pvalue3$p.value),]
+nomes3=rownames(pvalues3Signif)
+geneNames3=unlist(mget(nomes3, illuminaHumanv4SYMBOL))
 geneNames3
-geneFunction3=unlist(mget(geneFeatNames3, illuminaHumanv4GENENAME))
+geneFunction3=unlist(mget(nomes3, illuminaHumanv4GENENAME))
 geneFunction3
 
 #####Responde x Nao responde (1month e litio)########
+#Na seguinte tabela encontram-se os 25 genes com maior evidência estatística de expressão génica
+#diferencial no que diz respeito ao atributo "other" após 1 mês de tratamento com lítio. 
+#Este teste foi feito com o intuito de perceber, dentro dos indivíduos que foram tratados com lítio durante 1 mês,
+#quais os genes que apresentavam as maiores diferenças de expressão quando comparados os indivíduos que respondem e não respondem ao tratamento. 
+
+
 test4=rowttests(normalized_exp_filtrado2[normalized_exp_filtrado2$time=="1 month" & normalized_exp_filtrado2$agent=="lithium"],"other")
 test4
-pvalues4= test4$p.value
-pvalues4
-pvalues4Signif= order(test4[test4$p.value<0.01, "p.value"])
-pvalues4Signif
-indices_melhoresGenes4=pvalues4Signif[1:25]
-indices_melhoresGenes4
-geneFeatNames4=featureNames(normalized_exp_filtrado2[indices_melhoresGenes4])
-geneNames4=unlist(mget(geneFeatNames4, illuminaHumanv4SYMBOL))
+sign_pvalue4=test4[test4$p.value<0.01,]
+sign_pvalue4
+pvalues4Signif=sign_pvalue4[order(sign_pvalue4$p.value),]
+nomes4=rownames(pvalues4Signif)[1:25]
+geneNames4=unlist(mget(nomes4, illuminaHumanv4SYMBOL))
 geneNames4
-geneFunction4=unlist(mget(geneFeatNames4, illuminaHumanv4GENENAME))
+geneFunction4=unlist(mget(nomes4, illuminaHumanv4GENENAME))
 geneFunction4
 
-######Baseline x 1 month (Litio)##### 
+#######POR NO FINAL######
+#Nos testes de hipóteses realizados concluímos que os genes com maiores diferenças estatísiticas significativas, obtidos para os t-test 
+#realizado para os diferentes tipos de tratamento, não foram os mesmos para diferentes tempos experimentais. Isto sugere que, apesar 
+#de não ser possível relacionar diretamente estas diferenças com o tratamento com lítio, diferentes tipos de tratamento podem estar relacionados
+#com a variabilidade da expressão de certos genes. 
+#Quanto às diferenças de expressão génica dentro de individuos que respondem ao tratamento com litio nas diferentes linhas temporais, verificamos
+#que apenas 5 genes se expressavam de forma efetivamente diferente quando comparamos o tempo inicial do estudo com 1 mês de tratamento. 
 
-test5=rowttests(normalized_exp_filtrado2[normalized_exp_filtrado2$agent=="lithium"],"time")
-test5
-pvalues5= test5$p.value
-pvalues5
-pvalues5Signif= order(test5[test5$p.value<0.05, "p.value"])
-pvalues5Signif
-indices_melhoresGenes5=pvalues5Signif[1:25]
-indices_melhoresGenes5
-geneFeatNames5=featureNames(normalized_exp_filtrado2[indices_melhoresGenes5])
-geneNames5=unlist(mget(geneFeatNames5, illuminaHumanv4SYMBOL))
-geneNames5
-geneFunction5=unlist(mget(geneFeatNames5, illuminaHumanv4GENENAME))
-geneFunction5
-
-
-#####Baseline x 1 month (controlo)#####
-
-test6=rowttests(normalized_exp_filtrado2[normalized_exp_filtrado2$agent=="control"],"time")
-test6
-pvalues6= test6$p.value
-pvalues6
-pvalues6Signif= order(test6[test6$p.value<0.05, "p.value"])
-pvalues6Signif
-indices_melhoresGenes6=pvalues6Signif[1:25]
-indices_melhoresGenes6
-geneFeatNames6=featureNames(normalized_exp_filtrado2[indices_melhoresGenes6])
-geneNames6=unlist(mget(geneFeatNames6, illuminaHumanv4SYMBOL))
-geneNames6
-geneFunction6=unlist(mget(geneFeatNames6, illuminaHumanv4GENENAME))
-geneFunction6
+#Relativamente ao teste estatístico que diz respeito à comparação de individuos que respondem e não respondem após 1 mês de tratamento 
+#com lítio, os resultados insidem na possibilidade da resposta dos pacientes ao tratamento com lítio estar associada à regulação da expressão
+#de alguns genes tornando-os, assim possíveis alvos para aumentar a eficácia do tratamento. 
