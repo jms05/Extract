@@ -281,7 +281,7 @@ c(mean(exprs(normalized_exp_filtrado2)),sd(exprs(normalized_exp_filtrado2)),sum(
  O código acima apresentado é resposável pela remoção dos valores omissos e normalização do *ExprecionSet* que será utilizado de agora em diante. Como é possivel de verificar pelo *output* do último comando executado. 
 </p>
 
-#Análise Expressão Diferencial e Enriquecimento
+#Análise Expressão Diferencial
 
 > <p style = 'text-align: justify;'>
 Neste passo foram identificados, através de testes de hipóteses, os 25 genes que apresentavam menor *p-value*, ou seja, os genes cuja evidência estatística da expressão génica diferencial foi mais significativa. Os resultados obtidos foram registados nas seguintes tabelas e organizados segundo o nome do gene, identificador do gene e respetiva função. 
