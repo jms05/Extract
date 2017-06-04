@@ -1,0 +1,902 @@
+---
+title: "Gene Expression Signature of Cigarette Smoking and Its Role in Lung Adenocarcinoma Development and Survival"
+author: "Helder Gonçalves 64286 | Patricia Machado 30377 | Telma Afonso 30387"
+date: "23 de junho, 2016"
+bibliography: Referencias.bibtex
+
+output:
+  html_document:
+    css: tableContents.css
+    toc: true
+    depth: 3
+    number_sections: true 
+    theme: united 
+    highlight: tango
+
+---
+
+<img src="logo.png" style = "position:absolute;top:0px;right:0px;" />
+
+```{r setup, cache = FALSE, echo = FALSE}
+options(width = 107, digits = 4) #porque ao correr fazia wrap de algumas tabelas
+knitr::opts_chunk$set(cache = TRUE, autodep = TRUE) #para por os objetos em cache e associar uns aos outros automaticamente
+```
+
+
+# Introdução
+<p style = 'text-align: justify;'>
+Este trabalho surge no âmbito da disciplina de Extração de Conhecimento de Bases de Dados Biológicas, tendo como principal objetivo o desenvolvimento de scripts em R/Bioconductor para análise de dados de expressão genética. Os dados analisados neste trabalho são provenientes de um estudo sobre o perfil de expressão genética do consumo de tabaco e o papel deste no desenvolvimento de adenocarcinoma pulmonar [@landi2008gene].
+</p>
+
+<p style = 'text-align: justify;'>
+O adenocarcinoma pulmonar é uma forma comum de cancro no pulmão, geralmente encontrada em fumadores, embora ocorra também em pessoas que nunca consumiram tabaco. Inicia-se normalmente nos tecidos exteriores do pulmão, podendo permanecer indetetável durante longos períodos de tempo. É um dos tipos de cancro mais comuns e mortais e, no entanto, as alterações a nível molecular induzidas pelo consumo de tabaco que levam ao desenvolvimento de cancro não são ainda totalmente conhecidas [@subramanian2007lung]. Deste modo, o estudo e compreensão destes mecanismos de neoplasia pulmonar são essenciais, possibilitando a identificação de genes que poderão estar associados no processo de desenvolvimento do cancro e, consequentemente, identificar possíveis alvos a ter em conta no seu tratamento.
+</p>
+
+<p style = 'text-align: justify;'>
+O estudo no qual este trabalho se baseia contou com 105 indivíduos com adenocarcinoma pulmonar de idades entre os 44 e os 72 anos, pertencentes ao *Environment And Genetics in Lung cancer Etiology* (EAGLE), um outro estudo focado em cancro pulmonar na região de Lombardy, em Itália. Os dados de expressão genética foram obtidos usando microarrays HG-U133A da Affimetrix, contando com 135 amostras de tecido normal (**NT**) e com adenocarcinoma (**T**), provenientes de indivíduos atualmente fumadores (**C**), antigos fumadores (**F**) e nunca fumadores (**N**). Após algum pré-processamento realizado pelos autores o dataset final encontra-se já normalizado, totalizando 107 amostras de 58 tecidos tumorais e 49 tecidos não tumorais, provenientes de 20 nunca fumadores, 26 antigos fumadores e 28 atualmente fumadores. O dataset utilizado neste trabalho encontra-se disponível na base de dados GEO, do NCBI, sob o código de acesso [GDS3257](http://www.ncbi.nlm.nih.gov/sites/GDSbrowser?acc=GDS3257).
+</p>
+
+
+# Carregamento e verificação dos dados
+<p style = 'text-align: justify;'>
+Packages necessários:
+</p>
+
+```{r installpacks, echo = FALSE, message = FALSE, warning = FALSE, include = FALSE}
+source("http://www.bioconductor.org/biocLite.R")
+biocLite("GEOquery")
+biocLite("limma")
+biocLite("hgu133a.db") #para a anotaçao dos genes
+install.packages("caret", repos="http://cran.rstudio.com/")
+install.packages("gtools", repos="http://cran.rstudio.com/")
+install.packages("GOstats", repos="http://cran.rstudio.com/")
+install.packages("MLInterfaces", repos="http://cran.rstudio.com/")
+```
+
+```{r packages, message = FALSE, warning = FALSE}
+library(Biobase)
+library(GEOquery)
+library(hgu133a.db)
+library(genefilter)
+library(limma)
+library(caret)
+library(gtools)
+library(GOstats)
+library(gplots)
+library(MLInterfaces)
+```
+
+<p style = 'text-align: justify;'>
+Download e carregamento do dataset:
+</p>
+
+```{r dataset, message = FALSE}
+gds3257 <- getGEO('GDS3257', destdir = ".")
+```
+
+<p style = 'text-align: justify;'>
+Transformar o dataset num expressionset:
+</p>
+
+```{r expressionset, message = FALSE, warning = FALSE, dependson = "dataset"}
+eset <- GDS2eSet(gds3257)
+eset
+```
+
+## Dados
+
+<p style = 'text-align: justify;'>
+O expressionset contém 107 amostras e um total de 22283 features, correspondentes às 22283 sondas presentes no microarray.
+</p>
+<p style = 'text-align: justify;'>
+Exemplo dos dados de expressão para os 10 primeiros genes e 6 primeiras amostras:
+</p>
+
+```{r dados, message = FALSE, warning = FALSE}
+dados = exprs(eset)
+dados[1:10,1:6]
+```
+
+<p style = 'text-align: justify;'>
+Fazendo um boxplot com o logaritmo de base 2 dos dados de expressão para todas as amostras facilmente verificamos a escala e distribuição dos dados. As caixas apresentam forma e centro semelhantes entre amostras, indicando que os dados de expressão já estão normalizados, tal como referido, e podem então ser usados para termos de comparação.
+</p>
+
+```{r boxplot, fig.width = 10, fig.align = 'center',  message = FALSE, warning = FALSE}
+col = terrain.colors(length(pData(eset)$individual), alpha = 0.7)
+boxplot(log2(dados), col = col, whiskcol = col, pch = 21, cex = 0.8, xlab = 'Amostras', ylab = 'Intensidades (log2)', notch = TRUE, frame = FALSE)
+```
+
+
+## Metadados
+
+<p style = 'text-align: justify;'>
+Os metadados apresentam 6 campos, entre os quais: *tissue*, se o tecido pulmonar da amostra é de tumor ou normal, *individual*, se o indivíduo é atual, antigo ou nunca fumador, *disease.state*, indicando o estado em que se encontra o tumor no paciente e *gender*, indicando o sexo do paciente, além de outros campos de descrição.
+</p>
+
+```{r metadados, message = FALSE, warning = FALSE}
+vars = pData(eset)
+names(vars)
+levels(vars$tissue); levels(vars$individual); levels(vars$disease.state); levels(vars$gender)
+```
+
+<p style = 'text-align: justify;'>
+Na tabela que se segue encontram-se o número de amostras correspondentes às variáveis *tissue* e *individual*, de modo a entender-se quantas das 107 amostras pertencem a cada variável.
+</p>
+
+```{r varstabela, message = FALSE, warning = FALSE}
+addmargins(table(vars$tissue,vars$individual))
+```
+
+
+# Preprocessamento
+
+<p style = 'text-align: justify;'>
+Verificar se existem NAs no expressionset:
+</p>
+
+```{r NAs, message = FALSE, warning = FALSE}
+sum(which(is.na(dados)))
+```
+
+<p style = 'text-align: justify;'>
+O expressionset não contém, portanto, dados omissos. Como verificamos anteriormente os dados já se encontram normalizados e prontos a analisar. Todas as 22283 sondas (features) serão utilizadas nas subsequentes análises, abordagem também optada pelos autores [@landi2008gene]. Para a análise preditiva e de clustering optou-se por filtrar os dados, reduzindo o numero de features de modo a tornar o processo menos computacionalmente pesado, filtrando-se os genes cujo desvio padrão dos valores de expressão é maior do que duas vezes a mediana dos desvios padrão de todos os genes:
+</p>
+
+```{r filtrados, message = FALSE, warning = FALSE}
+sds = rowSds(dados)
+m = median(sds)
+eset.f = eset[sds > 2*m]
+```
+
+<p style = 'text-align: justify;'>
+Visualmente corresponde a selecionarmos todos os genes cujo desvio padrão dos valores de expressão se situa para lá da linha verde no histograma abaixo:
+</p>
+
+```{r histograma, fig.align = 'center', message = FALSE, warning = FALSE}
+hist(sds,breaks = 50,ylim = c(0,4000),col = "tomato",xlab = 'Desvio padrão',ylab = 'Frequência',main = NULL)
+abline(v = m*2, col = "olivedrab3",lwd = 3,lty = 2)
+```
+
+# Análise de expressão diferencial e de enriquecimento
+<p style = 'text-align: justify;'>
+As análises estatísticas que se seguem foram realizadas utilzando o package *limma* [@ritchie2015limma], uma biblioteca para análise de expressão genética em dados e microarrays, que permite a criação de modelos lineares usando uma extensão Bayes empírica da ANOVA, apropriada para estudos deste tipo. Os genes de interesse identificados por estas análises estatísticas foram então submetidos a uma análise de enriquecimento, de modo a verificar se neste conjunto de genes existe "enriquecimento" estatisticamente significativo nos genes de algum (ou vários) conjuntos de outros genes biologicamente coerentes. Esta última análise foi realizada usando o package *GOstats* [@falcon2007using], que permite testar listas de genes para associação de termos de Gene Ontology (GO).
+</p>
+
+<p style = 'text-align: justify;'>
+De modo a tentar encontrar alterações moleculares associadas com o consumo de tabaco, foi realizada uma análise de expressão diferencial entre atuais fumadores e nunca fumadores (**C**/**N**) e antigos fumadores e nunca fumadores (**F**/**N**), para todas as amostras tumorais, para as primeiras fases de tumor (fases I e II) e para todas as amostras de tecido normal. A análise de amostras de tecido tumoral nas primeiras fases poderá ser mais apropriada, uma vez que o estado avançado do tumor poderá causar potenciais alterações de expressão genética. Como critério de significância definiu-se p-value < 0.01 e Fold Change > 1.5.
+</p>
+
+## Nunca fumadores vs. atuais fumadores (Tecido tumoral)
+<p style = 'text-align: justify;'>
+Criação do design para o modelo linear, definindo *never smoker* como referência:
+</p>
+
+```{r design1, message = FALSE, warning = FALSE}
+eset.tumor = eset[, eset$tissue == "tumor"]
+indivs1 = relevel(eset.tumor$individual, 'never smoker')
+design1 = model.matrix(~ indivs1)
+head(design1)
+```
+
+<p style = 'text-align: justify;'>
+Criação dos modelos lineares de regressão e realização dos testes estatísticos:
+</p>
+
+```{r modelo1, message = FALSE, warning = FALSE}
+fit1 = lmFit(eset.tumor, design1)
+fit.bayes1 = eBayes(fit1) 
+diff1 = topTable(fit.bayes1, coef = 2, 1000, genelist = fit1$genes$NAME)
+diff1[1:10,]
+```
+
+
+<p style = 'text-align: justify;'>
+De acordo com os testes anteriores verificar quais o genes mais diferentemente expressos, usando o critério de significância definido anteriormente (p-value < 0.01 e Fold Change > 1.5):
+</p>
+
+```{r genes1, message = FALSE, warning = FALSE}
+treshold = foldchange2logratio (1.5)
+upregulated1 = diff1[which(diff1$logFC > treshold & diff1$adj.P.Val < 0.01),]
+downregulated1 = diff1[which(diff1$logFC < -treshold & diff1$adj.P.Val < 0.01),]
+unlist(mget(rownames(upregulated1),hgu133aSYMBOL))
+unlist(mget(rownames(downregulated1),hgu133aSYMBOL))
+```
+
+
+<p style = 'text-align: justify;'>
+Verificamos que, para o critério de significância definido, existem 30 genes sobreexpressos (em 33 sondas) e 8 genes (em 8 sondas) subexpressos em tecido tumoral de pacientes fumadores em relação aos nunca fumadores. De seguida será realizada uma análise de enriquecimento de modo a tentar determinar a classe biológica mais provável em que este conjunto de genes se enquadra. 
+</p>
+
+<p style = 'text-align: justify;'>
+Para esta e as seguintes análises de enriquecimento considerou-se como critério de significância p-value < 0.025. O universo de genes corresponde à totalidade de genes exitentes no expressionset.
+</p>
+
+<p style = 'text-align: justify;'>
+**Análise de enriquecimento para os genes sobrexpressos:**
+</p>
+
+```{r GOsobre1, message = FALSE, warning = FALSE}
+entrezUniverse = unlist(mget(featureNames(eset), hgu133aENTREZID))
+selectedEntrezIds1 = unlist(mget(rownames(upregulated1), hgu133aENTREZID))
+params1 = new("GOHyperGParams", geneIds = selectedEntrezIds1, universeGeneIds = entrezUniverse, 
+             annotation = "hgu133a.db", ontology = "BP", pvalueCutoff = 0.025, testDirection = "over")
+hgOver1 = hyperGTest(params1)
+summary(hgOver1)[1:15,]
+```
+
+<p style = 'text-align: justify;'>
+O resultado anterior aponta para uma existência de "enriquecimento" estatisticamente significativo em genes cujos processos biológicos se relacionam com a divisão/ciclo celular, processo de mitose e segregação dos cromossomas, entre outros. Considerando que uma das caraterísticas mais evidentes no desenvolvimento do cancro passa pela rápida e descontrolada proliferação celular estes resultados vão de encontro ao que seria de esperar. De facto, entre os genes identificados estão o "TTK" (codifica proteína essecial no alinhamento cromossomal durante a mitose [@mills1992expression]), "ECT2" (pensa-se que poderá ter um papel importante na regulação da citocinese [@tatsumoto1999human]) e "CENPF" (indispensável para a função do cinetócoro e segregação cromossomal durante a mitose [@liao1995cenp]), entre outros, reforçando o resultado obtido.
+</p>
+
+<p style = 'text-align: justify;'>
+**Análise de enriquecimento para os genes subexpressos:**
+</p>
+
+```{r GOsub1, message = FALSE, warning = FALSE}
+selectedEntrezIds2 = unlist(mget(rownames(downregulated1), hgu133aENTREZID))
+params2 = new("GOHyperGParams", geneIds = selectedEntrezIds2, universeGeneIds = entrezUniverse, 
+              annotation = "hgu133a.db", ontology = "BP", pvalueCutoff = 0.025, testDirection = "over")
+hgOver2 = hyperGTest(params2)
+summary(hgOver2)[c(1:6,8:14),] #linha 7 demasiado longa
+```
+
+<p style = 'text-align: justify;'>
+A análise de enriquecimento para genes subexpressos aponta para uma existência de "enriquecimento" estatisticamente significativo em genes cujos processos biológicos se relacionam com o processo de resposta de defesa celular e imunologia. Entre os genes identificados encontram-se o "SDC1" (codifica proteína transmembranar responsável por mediar a ligação e sinalização celular [@lories1992differential]) e "CIRBP" (induzido pelo frio, codifica uma proteína com papel protetor na resposta a stress genotóxico, estabilizando os transcritos involvidos na sobrevivência celular [@nishiyama1997cloning]), entre outros. Estas funções vêm reforçar o resultado obtido na análise de enriquecimento. O facto de o gene "SDC1" ser subexpresso e estar relacionado com a ligação celular também vai de certo modo de encontro ao esperado, já que uma outra caraterística em cancros é a metastização, podendo as células libertarem-se do local do tumor e viajar pela corrente sanguínea, alastrando o tumor a outros órgãos.
+</p>
+
+## Nunca fumadores vs. antigos fumadores (Tecido tumoral)
+<p style = 'text-align: justify;'>
+O design usado neste caso é o mesmo que no caso anterior. Criação dos modelos lineares de regressão e realização dos testes estatísticos:
+</p>
+
+```{r modelo2, message = FALSE, warning = FALSE}
+fit2 = lmFit(eset.tumor, design1)
+fit.bayes2 = eBayes(fit2) 
+diff2 = topTable(fit.bayes2, coef = 3, 1000, genelist = fit2$genes$NAME)
+diff2[1:10,]
+```
+
+<p style = 'text-align: justify;'>
+De acordo com os testes anteriores verificar quais o genes mais diferentemente expressos, usando o critério de significância já definido:
+</p>
+
+```{r genes2, message = FALSE, warning = FALSE}
+upregulated2 = diff2[which(diff2$logFC > treshold & diff2$adj.P.Val < 0.01),] 
+downregulated2 = diff2[which(diff2$logFC < -treshold & diff2$adj.P.Val < 0.01),]
+unlist(mget(rownames(upregulated2),hgu133aSYMBOL))
+unlist(mget(rownames(downregulated2),hgu133aSYMBOL))
+```
+
+<p style = 'text-align: justify;'>
+Verificamos que, para o critério de significância definido, não existem genes sobre ou subexpressos em tecidos provenientes de antigos fumadores relativamente aos tecido provenientes de nunca fumadores.
+</p>
+
+
+## Nunca fumadores vs. atuais fumadores (Tecido tumoral - fases I e II)
+<p style = 'text-align: justify;'>
+Criação do design para o modelo linear, definindo *never smoker* como referência:
+</p>
+
+```{r design2, message = FALSE, warning = FALSE}
+eset.stumor = eset[, eset$tissue == "tumor" & (eset$disease.state == 'stage I' | eset$disease.state == 'stage II')]
+indivs2 = relevel(eset.stumor$individual, 'never smoker')
+design2 = model.matrix(~ indivs2)
+head(design2)
+```
+
+<p style = 'text-align: justify;'>
+Criação dos modelos lineares de regressão e realização dos testes estatísticos:
+</p>
+
+```{r modelo3, message = FALSE, warning = FALSE}
+fit3 = lmFit(eset.stumor, design2)
+fit.bayes3 = eBayes(fit3) 
+diff3 = topTable(fit.bayes3, coef = 2, 1000, genelist = fit3$genes$NAME)
+head(diff3)
+```
+
+<p style = 'text-align: justify;'>
+De acordo com os testes anteriores verificar quais o genes mais diferentemente expressos, usando o critério de significância já definido:
+</p>
+
+```{r genes3, message = FALSE, warning = FALSE}
+upregulated3 = diff3[which(diff3$logFC > treshold & diff3$adj.P.Val < 0.01),]
+downregulated3 = diff3[which(diff3$logFC < -treshold & diff3$adj.P.Val < 0.01),]
+unlist(mget(rownames(upregulated3),hgu133aSYMBOL))
+unlist(mget(rownames(downregulated3),hgu133aSYMBOL))
+```
+
+<p style = 'text-align: justify;'>
+Verificamos que, para o critério de significância definido, existem 9 genes sobreexpressos (em 10 sondas) e 9 genes subexpressos (em 9 sondas) em tecido tumoral de pacientes fumadores em relação aos nunca fumadores. De seguida será realizada uma análise de enriquecimento de modo a tentar determinar a classe biológica mais provável em que este conjunto de genes se enquadra. 
+</p>
+
+<p style = 'text-align: justify;'>
+**Análise de enriquecimento para os genes sobrexpressos:**
+</p>
+
+```{r GOsobre2, message = FALSE, warning = FALSE}
+selectedEntrezIds3 = unlist(mget(rownames(upregulated3), hgu133aENTREZID))
+params3 = new("GOHyperGParams", geneIds = selectedEntrezIds3, universeGeneIds = entrezUniverse, 
+              annotation = "hgu133a.db", ontology = "BP", pvalueCutoff = 0.025, testDirection = "over")
+hgOver3 = hyperGTest(params3)
+summary(hgOver3)[1:15,]
+```
+
+<p style = 'text-align: justify;'>
+O resultado anterior aponta para uma existência de "enriquecimento" estatisticamente significativo em genes cujos processos biológicos se relacionam com a divisão/ciclo celular, processo de mitose e regulação/segregação cromossomal, entre outros. Estes resultados são, de facto, semelhantes aqueles obtidos quando consideramos todas as fases tumorais. Também aqui os genes mencionados anteriormente estão entre os mais sobrexpressos, cuja função se relaciona com o resultado obtido. No entanto quando apenas consideramos as primeiras fases tumorais (fases I e II) o nr de genes sobrexpressos diminui, o que poderá estar relacionado com o facto mencionado anteriormente de o estado avançado do tumor (não considerado aqui) poder causar potenciais alterações na expressão genética.
+</p>
+
+<p style = 'text-align: justify;'>
+**Análise de enriquecimento para os genes subexpressos:**
+</p>
+
+```{r GOsub2, message = FALSE, warning = FALSE}
+selectedEntrezIds4 = unlist(mget(rownames(downregulated3), hgu133aENTREZID))
+params4 = new("GOHyperGParams", geneIds = selectedEntrezIds4, universeGeneIds = entrezUniverse, 
+              annotation = "hgu133a.db", ontology = "BP", pvalueCutoff = 0.025, testDirection = "over")
+hgOver4 = hyperGTest(params4)
+summary(hgOver4)[1:15,] #linhas demasiado longas
+```
+
+<p style = 'text-align: justify;'>
+A análise de enriquecimento para genes subexpressos aponta para uma existência de "enriquecimento" estatisticamente significativo em genes cujos processos biológicos se relacionam com distriuição/localização/polarização de *rafts* na membrana plasmática, regulação de macromitofagia (forma especializada de autofagia pela qual se degradam e reciclam selectivamente as mitocondrias) e ainda com a organização da matrix extracelular. Sendo a matriz extracelular constituida por um conjunto de moléculas que conferem suporte estrutural e bioquímico às células circundantes, alguns dos genes identificados poderão estar relacionados com a metastização do tumor. Uma outra caraterística comum a células cancerígenas consiste numa maior resistência à apoptose mitocondrial, pelo que seria de esperar genes que regulam positivamente este processo estarem subexpressos. Entre os genes mais subespressos estão o "ADRB2" (envolvido no processo de adesão celular [@boulay2012loss]) e "SDC1" (envolvido com a matrix celular e processo de adesão celular [@lories1992differential]), entre outros.
+
+## Nunca fumadores vs. antigos fumadores (Tecido tumoral - fases I e II)
+<p style = 'text-align: justify;'>
+O design usado neste caso é o mesmo que no caso anterior. Criação dos modelos lineares de regressão e realização dos testes estatísticos:
+</p>
+
+```{r modelo4, message = FALSE, warning = FALSE}
+fit4 = lmFit(eset.stumor, design2)
+fit.bayes4 = eBayes(fit4) 
+diff4 = topTable(fit.bayes4, coef = 3, 1000, genelist = fit4$genes$NAME)
+head(diff4)
+```
+
+<p style = 'text-align: justify;'>
+De acordo com os testes anteriores verificar quais o genes mais diferentemente expressos, usando o critério de significância já definido:
+</p>
+
+```{r genes4, message = FALSE, warning = FALSE}
+upregulated4 = diff4[which(diff4$logFC > treshold & diff4$adj.P.Val < 0.01),] 
+downregulated4 = diff4[which(diff4$logFC < -treshold & diff4$adj.P.Val < 0.01),]
+unlist(mget(rownames(upregulated4),hgu133aSYMBOL))
+unlist(mget(rownames(downregulated4),hgu133aSYMBOL))
+```
+
+<p style = 'text-align: justify;'>
+Verificamos que, para o critério de significância definido, não existem genes sobre ou subexpressos em tecidos provenientes de antigos fumadores relativamente aos tecido provenientes de nunca fumadores.
+</p>
+
+
+## Nunca fumadores vs. atuais fumadores (Tecido normal)
+<p style = 'text-align: justify;'>
+Criação do design para o modelo linear, definindo *never smoker* como referência:
+</p>
+
+```{r design3, message = FALSE, warning = FALSE}
+eset.normal = eset[, eset$tissue == "normal"]
+indivs3 = relevel(eset.normal$individual, 'never smoker')
+design3 = model.matrix(~ indivs3)
+head(design3)
+```
+
+<p style = 'text-align: justify;'>
+Criação dos modelos lineares de regressão e realização dos testes estatísticos:
+</p>
+
+```{r modelo5, message = FALSE, warning = FALSE}
+fit5 = lmFit(eset.normal, design3)
+fit.bayes5 = eBayes(fit5) 
+diff5 = topTable(fit.bayes5, coef = 2, 1000, genelist = fit5$genes$NAME)
+head(diff5)
+```
+
+<p style = 'text-align: justify;'>
+De acordo com os testes anteriores verificar quais o genes mais diferentemente expressos, usando o critério de significância já definido:
+</p>
+
+```{r genes5, message = FALSE, warning = FALSE}
+upregulated5 = diff5[which(diff5$logFC > treshold & diff5$adj.P.Val < 0.01),]
+downregulated5 = diff5[which(diff5$logFC < -treshold & diff5$adj.P.Val < 0.01),]
+unlist(mget(rownames(upregulated5),hgu133aSYMBOL)) 
+unlist(mget(rownames(downregulated5),hgu133aSYMBOL))
+```
+
+<p style = 'text-align: justify;'>
+Verificamos que, para o critério de significância definido, existem 7 genes sobreexpressos (em 9 sondas) e 11 genes subexpressos (em 11 sondas) em tecido normal de pacientes fumadores em relação aos nunca fumadores. De seguida será realizada uma análise de enriquecimento de modo a tentar determinar a classe biológica mais provável em que este conjunto de genes se enquadra. 
+</p>
+
+<p style = 'text-align: justify;'>
+**Análise de enriquecimento para os genes sobrexpressos:**
+</p>
+
+```{r GOsobre3, message = FALSE, warning = FALSE}
+selectedEntrezIds5 = unlist(mget(rownames(upregulated5), hgu133aENTREZID))
+params5 = new("GOHyperGParams", geneIds = selectedEntrezIds5, universeGeneIds = entrezUniverse, 
+              annotation = "hgu133a.db", ontology = "BP", pvalueCutoff = 0.025, testDirection = "over")
+hgOver5 = hyperGTest(params5)
+summary(hgOver5)[c(1:12,14:15),] #linha 13 demasiado longa
+```
+
+<p style = 'text-align: justify;'>
+O resultado anterior aponta para uma existência de "enriquecimento" estatisticamente significativo em genes cujos processos biológicos se relacionam com a defesa celular e resposta imunológica. Entre os genes mais sobrexpressos, como seria de esperar, encontra-se o "CYP1B1", um gene que se sabe ser induzido pelo consumo de tabaco [@lampe2004signatures] e cuja enzima codificada metaboliza procarcinógenos, substâncias químicas que se tornam carcinógenos após metabolizadas.
+</p>
+
+<p style = 'text-align: justify;'>
+**Análise de enriquecimento para os genes subexpressos:**
+</p>
+
+```{r GOsub3, message = FALSE, warning = FALSE}
+selectedEntrezIds6 = unlist(mget(rownames(downregulated5), hgu133aENTREZID))
+params6 = new("GOHyperGParams", geneIds = selectedEntrezIds6, universeGeneIds = entrezUniverse, 
+              annotation = "hgu133a.db", ontology = "BP", pvalueCutoff = 0.025, testDirection = "over")
+hgOver6 = hyperGTest(params6)
+summary(hgOver6)[c(1:4,6:15),-4] #linha 5 demasiado longa
+```
+
+<p style = 'text-align: justify;'>
+A análise de enriquecimento para genes subexpressos aponta para uma existência de "enriquecimento" estatisticamente significativo em genes cujos processos biológicos se relacionam com processos metabólicos e, interessantemente, com a morfogénese/deseonvolvimento da glândula mamária. Embora este estudo seja em adenocarcinoma pulmonar, não deixa de ser interessante verificar que, em tecido normal de fumadores, haja expressão diferencial em genes relacionados com a morfogénese/desenvolvimento da glândula mamária, uma vez que se pensa que o consumo do tabaco está relacionado com o surgimento do cancro da mama [@catsburg2014active]. No entanto, poderá tratar-se apenas de uma coincidência. Entre os genes mais subespressos estão o "DPT", "ARHGEF4" e "NUAK1", todos eles relacionados com o processo de adesão celular [@superti1993complementary; @thiesen2000isolation; @hou2011new].
+</p>
+
+
+## Nunca fumadores vs. antigos fumadores (Tecido normal)
+<p style = 'text-align: justify;'>
+O design usado neste caso é o mesmo que no caso anterior. Criação dos modelos lineares de regressão e realização dos testes estatísticos:
+</p>
+
+```{r modelo6, message = FALSE, warning = FALSE}
+fit6 = lmFit(eset.normal, design3)
+fit.bayes6 = eBayes(fit6) 
+diff6 = topTable(fit.bayes6, coef = 3, 1000, genelist = fit6$genes$NAME)
+head(diff6)
+```
+
+<p style = 'text-align: justify;'>
+De acordo com os testes anteriores verificar quais o genes mais diferentemente expressos, usando o critério de significância já definido:
+</p>
+
+```{r genes6, message = FALSE, warning = FALSE}
+upregulated6 = diff6[which(diff6$logFC > treshold & diff6$adj.P.Val < 0.01),] 
+downregulated6 = diff6[which(diff6$logFC < -treshold & diff6$adj.P.Val < 0.01),]
+unlist(mget(rownames(upregulated6),hgu133aSYMBOL))
+unlist(mget(rownames(downregulated6),hgu133aSYMBOL))
+```
+
+<p style = 'text-align: justify;'>
+Verificamos que, para o critério de significância definido, existem 3 genes sobreexpressos (em 3 sondas) e 1 gene subexpressos (em duas sondas) em tecido normal de pacientes antigos fumadores em relação aos nunca fumadores. De seguida será realizada uma análise de enriquecimento de modo a tentar determinar a classe biológica mais provável em que este conjunto de genes se enquadra. 
+</p>
+
+<p style = 'text-align: justify;'>
+**Análise de enriquecimento para os genes sobrexpressos:**
+</p>
+
+```{r GOsobre4, message = FALSE, warning = FALSE}
+selectedEntrezIds7 = unlist(mget(rownames(upregulated6), hgu133aENTREZID))
+params7 = new("GOHyperGParams", geneIds = selectedEntrezIds7, universeGeneIds = entrezUniverse, 
+              annotation = "hgu133a.db", ontology = "BP", pvalueCutoff = 0.025, testDirection = "over")
+hgOver7 = hyperGTest(params7)
+summary(hgOver7)[1:15,]
+```
+
+<p style = 'text-align: justify;'>
+O resultado anterior aponta para uma existência de "enriquecimento" estatisticamente significativo em genes cujos processos biológicos se relacionam com a defesa celular e resposta imunológica ("KDM5D" [@rezvani2008characterizing],"DDX3Y" [@rosinski2008ddx3y]), biossíntese e processamento de péptidos e histonas ("RPS4Y1", [@andres2008rps4y]).
+</p>
+
+<p style = 'text-align: justify;'>
+**Análise de enriquecimento para os genes subexpressos:**
+</p>
+
+```{r GOsub4, message = FALSE, warning = FALSE, error = 4}
+selectedEntrezIds8 = unlist(mget(rownames(downregulated6), hgu133aENTREZID))
+params8 = new("GOHyperGParams", geneIds = selectedEntrezIds8, universeGeneIds = entrezUniverse, 
+              annotation = "hgu133a.db", ontology = "BP", pvalueCutoff = 0.025, testDirection = "over")
+hgOver8 = hyperGTest(params8)
+```
+
+<p style = 'text-align: justify;'>
+Como podemos verificar, esta análise não pode ser realizado pois o gene a ser testado, "XIST", não tem nenhum termo GO correspondente. Este gene está envolvido na inativação de uma das cópias do cromossoma X em mamíferos do género feminino. 
+</p>
+
+## Antigos fumadores vs. atuais fumadores (Tecido tumoral - fases I e II)
+<p style = 'text-align: justify;'>
+De modo a verificar se o padrão verificado entre atuais fumadores/nunca fumadores também é verificado para antigos fumadores foi realizada uma análise de expressão genética entre atuais fumadores e antigos fumadores em tecidos tumorais nas primeiras fases.
+</p>
+
+<p style = 'text-align: justify;'>
+Criação do design para o modelo linear (*current smoker* como referência):
+</p>
+
+```{r design4, message = FALSE, warning = FALSE}
+design4 = model.matrix(~ eset.stumor$individual)
+head(design4)
+```
+
+<p style = 'text-align: justify;'>
+Criação dos modelos lineares de regressão e realização dos testes estatísticos:
+</p>
+
+```{r modelo7, message = FALSE, warning = FALSE}
+fit7 = lmFit(eset.stumor, design4)
+fit.bayes7 = eBayes(fit7) 
+diff7 = topTable(fit.bayes7, coef = 2, 1000, genelist = fit7$genes$NAME)
+head(diff7) 
+```
+
+<p style = 'text-align: justify;'>
+De acordo com os testes anteriores verificar quais o genes mais diferentemente expressos, usando o critério de significância já definido:
+</p>
+
+```{r genes7, message = FALSE, warning = FALSE}
+upregulated7 = diff7[which(diff7$logFC > treshold & diff7$adj.P.Val < 0.01),]
+downregulated7 = diff7[which(diff7$logFC < -treshold & diff7$adj.P.Val < 0.01),]
+unlist(mget(rownames(upregulated7),hgu133aSYMBOL))
+unlist(mget(rownames(downregulated7),hgu133aSYMBOL))
+```
+
+<p style = 'text-align: justify;'>
+Verificamos que, para o critério de significância definido, não existem genes diferencialmente expressos entre antigos fumadores relativamente a atuais fumadores. Isto poderá indicar que embora os pacientes já tivessem deixado de fumar há algum tempo as alterações a nível dos genes se manteve.
+</p>
+
+
+## Tabela resumo da análise de expressão diferencial
+<p style = 'text-align: justify;'>
+Na seguinte tabela encontram-se resumidos o nr de genes identificados durante as análises de expressão diferencial anteriores:
+</p>
+
+|     Tecido    |     Tumor    |              | Tumor (fases I e II) |      |    Normal     |              |
+----------------|--------------|--------------|--------------|--------------|---------------|--------------|
+**Condição**    |**24C vs 16N**|**18F vs 16N**|**20C vs 10N**|**13F vs 10N**|**16C vs 15N** |**18F vs 15N**|
+**Genes Sobr**  |      30      |      0       |     9        |      0       |       7       |       3      |
+**Sondas Sobr** |      33      |      0       |     10       |      0       |       9       |       3      |
+**Genes Sub**   |      8       |      0       |     9        |      0       |       11      |       1      |
+**Sondas Sub**  |      8       |      0       |     9        |      0       |       11      |       2      |
+|               |              |              |              |              |               |              |
+
+
+Table: **Tabela 1** - Número de sondas e genes (sobre e subexpressos) diferenciando atuais fumadores (**C**) de nunca fumadores (**N**) e antigos fumadores (**F**) de nunca fumadores em todas as amostras tumorais, amostras tumorais em fase I ou II e amostras de tecido normal. Como critério de significância para análise definiu-se p-value < 0.01 e Fold Change > 1.5.
+
+
+## Tecido normal vs. tecido normal
+<p style = 'text-align: justify;'>
+Uma análise de expressão diferencial foi também relizada entre amostras provenientes de tecido normal vs. tecido tumoral, de modo a obter-se uma visão geral expressão de genes nos dois tecidos sem ter em conta o perfil do paciente.
+</p>
+
+<p style = 'text-align: justify;'>
+Criação do design para o modelo linear (*normal* como referência):
+</p>
+
+```{r design5, message = FALSE, warning = FALSE}
+design5 = model.matrix(~ eset$tissue)
+head(design5)
+```
+
+<p style = 'text-align: justify;'>
+Criação dos modelos lineares de regressão e realização dos testes estatísticos:
+</p>
+
+```{r modelo8, message = FALSE, warning = FALSE}
+fit8 = lmFit(eset, design5)
+fit.bayes8 = eBayes(fit8) 
+diff8 = topTable(fit.bayes8, coef = 2, 1000, genelist = fit8$genes$NAME)
+head(diff8) 
+```
+
+<p style = 'text-align: justify;'>
+De acordo com os testes anteriores verificar quais o genes mais diferentemente expressos, usando o critério de significância já definido:
+</p>
+
+```{r genes8, message = FALSE, warning = FALSE}
+upregulated8 = diff8[which(diff8$logFC > treshold & diff8$adj.P.Val < 0.01),]
+downregulated8 = diff8[which(diff8$logFC < -treshold & diff8$adj.P.Val < 0.01),]
+length(unlist(mget(rownames(upregulated8),hgu133aSYMBOL))) #nr sondas
+length(unique(unlist(mget(rownames(upregulated8),hgu133aSYMBOL)))) #nr genes
+length(unlist(mget(rownames(downregulated8),hgu133aSYMBOL)))
+length(unique(unlist(mget(rownames(downregulated8),hgu133aSYMBOL))))
+```
+
+<p style = 'text-align: justify;'>
+Devido ao elevado número de genes no resultado optou-se por apresentar o número total de genes em vez da lista de genes em si. Verificamos que, para o critério de significância definido, existem 227 genes sobreexpressos (em 284 sondas) e 481 genes subexpressos (em 636 sondas) em tecido tumoral relativamente ao tecido normal. De seguida será realizada uma análise de enriquecimento de modo a tentar determinar a classe biológica mais provável em que este conjunto de genes se enquadra. 
+</p>
+
+<p style = 'text-align: justify;'>
+**Análise de enriquecimento para os genes sobrexpressos:**
+</p>
+
+```{r GOsobre5, message = FALSE, warning = FALSE}
+selectedEntrezIds9 = unlist(mget(rownames(upregulated8), hgu133aENTREZID))
+params9 = new("GOHyperGParams", geneIds = selectedEntrezIds9, universeGeneIds = entrezUniverse, 
+              annotation = "hgu133a.db", ontology = "BP", pvalueCutoff = 0.025, testDirection = "over")
+hgOver9 = hyperGTest(params9)
+summary(hgOver9)[1:15,]
+```
+
+<p style = 'text-align: justify;'>
+O resultado anterior aponta para uma existência de "enriquecimento" estatisticamente significativo em genes cujos processos biológicos se relacionam com a divisão celular, ciclo mitótico e processos catabólicos de açúcares. Isto vai de encontro ao esperado por razões anteriormente referidas. A sobrexpressão de genes relacionados com o catabolismo de açúcares é consistente com o facto de as células cancerígenas alterarem o seu metabolismo de forma a conseguirem uma mais rápida proliferação [@annibaldi2010glucose].
+</p>
+
+<p style = 'text-align: justify;'>
+**Análise de enriquecimento para os genes subexpressos:**
+</p>
+
+```{r GOsub5, message = FALSE, warning = FALSE}
+selectedEntrezIds10 = unlist(mget(rownames(downregulated8), hgu133aENTREZID))
+params10 = new("GOHyperGParams", geneIds = selectedEntrezIds10, universeGeneIds = entrezUniverse, 
+              annotation = "hgu133a.db", ontology = "BP", pvalueCutoff = 0.025, testDirection = "over")
+hgOver10 = hyperGTest(params10)
+summary(hgOver10)[1:15,]
+```
+
+<p style = 'text-align: justify;'>
+A análise de enriquecimento para genes subexpressos aponta para uma existência de "enriquecimento" estatisticamente significativo em genes cujos processos biológicos se relacionam com o desenvolvimento do sistema cardiovascular/circulatório, morfogénese e desenvolvimento de vasos sanguíneos, entre outros. Embora este resultado possa parecer contraditório relativamente ao que se sabe sobre o cancro, nomeadamente no que toca ao aumento do mecanismo de angiogénese, foi demonstrado que em alguns tipos de cancro o mecanismo de angiogénese não é assim tão relevante e é, em muitos casos, diminuido [@boneberg2009angiogenesis], pelo que o adenocarcinoma pulmonar poderá ser um desses casos.
+</p>
+
+
+# Clustering
+<p style = 'text-align: justify;'>
+Uma análise de clustering hierárquico foi realizada sobre os dados anteriormente filtrados do expression set, de modo a tentar perceber se existe um agrupamento evidente entre amostras de acordo com os valores de expressão. A distância entre clusters foi calculada pelo método *average linkage*, sendo a matriz de distâncias calculada usando a fórmula um menos a correlação de Pearson, abordagem também optada pelos autores deste estudo [@landi2008gene].
+</p>
+
+<p style = 'text-align: justify;'>
+Clustering hierárquico com cálculo da matriz de distâncias (usando dados filtrados):
+</p>
+
+```{r distmat, message = FALSE, warning = FALSE}
+corPDist = as.dist(1 - cor(exprs(eset.f), method = "pearson"))
+cl.hier = hclust (corPDist, method = "average")
+```
+
+<p style = 'text-align: justify;'>
+De modo a ser possível a colocação de cores no resultado do clustering, para uma melhor visualização dos resultados, foi necessária a criação da função auxiliar que se segue:
+</p>
+
+```{r auxfun, message = FALSE, warning = FALSE}
+clusMember = cutree(cl.hier, 2)
+labelCol = c('coral1', 'darkolivegreen3')
+
+colLab <- function(n) {
+  if (is.leaf(n)) {
+    a <- attributes(n)
+    labCol <- labelCol[clusMember[which(names(clusMember) == a$label)]]
+    attr(n, "nodePar") <- c(a$nodePar, lab.col = labCol)
+  }
+  n
+}
+```
+
+<p style = 'text-align: justify;'>
+O resultado da análise de clustering hierárquico pode então ser visualizado fazendo um plot, colocando cores de acordo com o tipo de tecido associado a cada amostra (tecido tumoral ou normal):
+</p>
+
+
+```{r hclust, fig.align = 'center', fig.width = 10, message = FALSE, warning = FALSE}
+clusDendro = dendrapply(as.dendrogram(cl.hier), colLab)
+par(cex = 0.6); plot(clusDendro, axes = F, ylim = c(0, 0.35))
+par(cex = 0.9); title(xlab="Amostras", ylab="Distâncias", main = NULL); axis(2)
+legend('topright', c('Tecido tumoral', 'Tecido normal'), fill = c('coral1', 'darkolivegreen3'), bty = "n")
+```
+
+<p style = 'text-align: justify;'>
+Analisando o gráfico verifica-se a formação de dois clusters evidentes, estando as amostras de tecido tumoral e tecido normal em ramos diferentes da árvore. Isto significa que os genes provenientes de tecido tumoral apresentam, no geral, um nível de expressão mais próximo entre si do que em relação aos genes provenientes de tecido normal. Isto vai de encontro ao esperado, já que o adenocarcinoma apresenta caraterísticas próprias que vão depender da sobrexpressão de alguns genes (relacionados com a multiplicação celular, mitose, etc.) e subexpressão de outros (relacionados com a adesão celular, mitofagia, etc.), havendo assim diferenças na expressão entre os dois tecidos.
+</p>
+
+<p style = 'text-align: justify;'>
+De seguida realizou-se uma análise de clustering tanto para amostras, semelhante ao que foi feito, como para as sondas, isto é, aplicando o clustering às colunas e linhas. Assim, definiram-se duas funções auxiliares, uma para cálculo da matriz de distâncias e outra para o clustering, necessárias para a criação do *heatmap*.
+</p>
+
+<p style = 'text-align: justify;'>
+Função auxiliar para cálculo da matriz de distâncias:
+</p>
+
+```{r funcDist, message = FALSE, warning = FALSE}
+dist.fun = function(x) {
+  return (as.dist (1 - cor(t (x), method = "pearson")))
+}
+```
+
+<p style = 'text-align: justify;'>
+Função auxiliar para realização do clustering hierárquico:
+</p>
+
+```{r funcClust, message = FALSE, warning = FALSE}
+clust.fun = function (x) {
+  return (hclust (x, method = "average"))
+}
+```
+
+<p style = 'text-align: justify;'>
+Uma outra função foi também definida de modo a poder ser aplicada no *heatmap* para associar uma cor a cada tipo de tecido, nomeadamente verde para amostras de tecido tumoral e amarelo para amostras de tecido normal.
+</p>
+
+```{r clustCol, message = FALSE, warning = FALSE}
+color.map.tissue <- function(tissue) { if (tissue == "tumor") "darkolivegreen3" else "lightgoldenrod1" }
+tissuecolors <- unlist(lapply(eset.f$tissue, color.map.tissue))
+```
+
+<p style = 'text-align: justify;'>
+Definindo previamente todas estas funções o *heatmap* pode então ser criado:
+</p>
+
+```{r heatmap, fig.align = 'center', fig.width = 9, fig.height = 7, message = FALSE, warning = FALSE}
+heatmap.2(exprs(eset.f), col = colorRampPalette(c("tomato", "seashell1", "steelblue1")), scale = "none", 
+          ColSideColors = tissuecolors, key = TRUE, symkey = FALSE, density.info = "none", trace = "none", 
+          cexRow = 0.5, distfun = dist.fun, hclustfun = clust.fun, labRow = F, margins = c(6,16), 
+          ylab = "Sondas", xlab = "Amostras")
+
+legend('topright', c("Tecido normal","Tecido tumoral"), bty = "n", fill = c("lightgoldenrod1", "darkolivegreen3"))
+```
+
+<p style = 'text-align: justify;'>
+De acordo com o resultado do heatmap observamos uma clara separação de expressão genética entre amostras provenientes de tecido tumoral e tecido normal. Além disso, dentro do mesmo tipo de tecido observa-se a formação de dois grupos de genes, pertencentes a ramos diferentes da árvore de clustering, sendo que um dos grupos é mais subexpresso do que o outro. Em tecido tumoral verificamos uma maior subexpressão de genes relativamente aos genes presentes em tecido normal, principalmente no grupo de genes do cluster mais acima. Por outro lado, também existem genes mais subexpressos em tecido tumoral relativamente ao normal, embora menos, resultado que vai de encontro à análise de expressão genética entre os dois tecidos realizada previamente (227 genes sobrexpressos contra 481 genes subexpressos, em tecido tumoral). Das análises anteriores sabemos que os genes sobrexpressos em tecido tumoral estão envolvidos nos processos de divisão celular, mitose e catabolismo de açúcares e os subexpressos estão envolvidos no mecanismo de angiogénese.
+</p>
+
+
+# Análise Preditiva
+
+<p style = 'text-align: justify;'>
+Uma análise preditiva foi realizada para previsão tanto do tipo de tecido (tumor/normal) como para o perfil do indivíduo (atual/antigo ou nunca fumador). Para tal usou-se o package *MLInterfaces* [@MLInterfaces2016], que disponibiliza uma forma standard de parametrização e apresentação de resultados dos algoritmos de aprendizagem. Na análise usaram-se os métodos de *machine learning* de K-vizinhos mais próximos, árvores de regressão e máquinas de vetores de suporte (SVMs), usando o método de validação cruzada que permite o uso de todos os dados disponíveis. O número de iterações para a validação cruzada foi definido como 10.
+</p>
+
+## K-vizinhos mais próximos
+
+**Previsão de tipo de tecido**
+
+<p style = 'text-align: justify;'>
+Construção do modelo e resultados:
+</p>
+
+```{r knn1, message = FALSE, warning = FALSE}
+knnResult.tissue.cv <- MLearn(tissue ~ ., eset.f, knnI(k = 1), xvalSpec("LOG", 10, balKfold.xvspec(10)))
+addmargins(confuMat(knnResult.tissue.cv))
+```
+
+<p style = 'text-align: justify;'>
+Precisão do modelo para previsão do tipo de tecido:
+</p>
+
+```{r pecc1, message = FALSE, warning = FALSE}
+precision(confuMat(knnResult.tissue.cv))
+```
+
+**Previsão do perfil do indivíduo**
+
+<p style = 'text-align: justify;'>
+Construção do modelo e resultados:
+</p>
+
+```{r knn2, message = FALSE, warning = FALSE}
+knnResult.indivs.cv <- MLearn(individual ~ ., eset.f, knnI(k = 1), xvalSpec("LOG", 10, balKfold.xvspec(10)))
+addmargins(confuMat(knnResult.indivs.cv))
+```
+
+<p style = 'text-align: justify;'>
+Precisão do modelo para previsão do perfil do indivíduo:
+</p>
+
+```{r pecc2, message = FALSE, warning = FALSE}
+precision(confuMat(knnResult.indivs.cv))
+```
+
+
+## Árvores de regressão
+
+**Previsão de tipo de tecido**
+
+<p style = 'text-align: justify;'>
+Construção do modelo e resultados:
+</p>
+
+```{r arv1, message = FALSE, warning = FALSE}
+treeResult.tissue.cv <- MLearn(tissue ~ ., eset.f, rpartI, xvalSpec("LOG", 10, balKfold.xvspec(10)))
+addmargins(confuMat(treeResult.tissue.cv))
+```
+
+<p style = 'text-align: justify;'>
+Precisão do modelo para previsão do tipo de tecido:
+</p>
+
+```{r pecc3, message = FALSE, warning = FALSE}
+precision(confuMat(treeResult.tissue.cv))
+```
+
+**Previsão do perfil do indivíduo**
+
+<p style = 'text-align: justify;'>
+Construção do modelo e resultados:
+</p>
+
+```{r arv2, message = FALSE, warning = FALSE}
+treeResult.indivs.cv <- MLearn(individual ~ ., eset.f, rpartI, xvalSpec("LOG", 10, balKfold.xvspec(10)))
+addmargins(confuMat(treeResult.indivs.cv))
+```
+
+<p style = 'text-align: justify;'>
+Precisão do modelo para previsão do perfil do indivíduo:
+</p>
+
+```{r pecc4, message = FALSE, warning = FALSE}
+precision(confuMat(treeResult.indivs.cv))
+```
+
+## Máquinas de vetores de suporte (SVMs)
+
+**Previsão de tipo de tecido**
+
+<p style = 'text-align: justify;'>
+Construção do modelo e resultados:
+</p>
+
+```{r svm1, message = FALSE, warning = FALSE}
+svmResult.tissue.cv <- MLearn(tissue ~ ., eset.f, svmI , xvalSpec("LOG", 10, balKfold.xvspec(10)))
+addmargins(confuMat(svmResult.tissue.cv))
+```
+
+<p style = 'text-align: justify;'>
+Precisão do modelo para previsão do tipo de tecido:
+</p>
+
+```{r pecc5, message = FALSE, warning = FALSE}
+precision(confuMat(svmResult.tissue.cv))
+```
+
+**Previsão do perfil do indivíduo**
+
+<p style = 'text-align: justify;'>
+Construção do modelo e resultados:
+</p>
+
+```{r svm2, message = FALSE, warning = FALSE}
+svmResult.indivs.cv <- MLearn(individual ~ ., eset.f, svmI , xvalSpec("LOG", 10, balKfold.xvspec(10)))
+addmargins(confuMat(svmResult.indivs.cv))
+```
+
+<p style = 'text-align: justify;'>
+Precisão do modelo para previsão do perfil do indivíduo:
+</p>
+
+```{r pecc6, message = FALSE, warning = FALSE}
+precision(confuMat(svmResult.indivs.cv))
+```
+
+<p style = 'text-align: justify;'>
+De um modo geral, os 3 tipos de modelos utilizados, k-vizinhos mais próximos, árvores de regressão e SVMs, apresentam um bom nível de precisão na previsão do tipo de tecido associado a cada amostra, sendo melhor o método de k-vizinhos mais próximos com um nível de precisão de 97,96% para amostras de tecido normal e 100% para amostras de tecido tumoral. Tal como vimos na análise de clustering, existe uma clara separação entre os dois tipos de tecidos, o que poderá tornar o processo de previsão mais fácil, como vemos aqui.
+</p>
+
+<p style = 'text-align: justify;'>
+Por outro lado, o nível de precisão desce consideravelmente quando se trata de prever o perfil do indivíduo associado a cada amostra, estando os níveis de precisão dos três modelos para esta situação por volta e principalmente abaixo dos 50% (com exceção da precisao do modelo de SVM para atuais fumadores, com 87,50%). Neste caso temos mais uma variável a prever do que no caso anterior, o que torna ainda mais complicado o processo de previsão. Além disso, esta diferença na previsão entre tecidos e perfil do indivíduo se deva ao facto de a diferença de expressao ser evidente entre celulas cancerigenas e normais (genes relacionados com ciclo celular, mitose, imunologia, etc.) e esta diferença não ser assim tão evidente quando o que está em causa é se o indivíduo consome ou não tabaco.
+</p>
+
+
+# Conclusões
+
+<p style = 'text-align: justify;'>
+A análise de expressão diferencial em 107 amostras de tecido tumoral e tecido normal provenientes de pacientes atuais, antigos e nunca fumadores demonstrou que existem alterações a nível genético provocadas pelo consumo de tabaco. De facto, em amostras de indivíduos fumadores verificou-se uma maior expressão de genes relacionados com o processo de divisão/ciclo celular, processo de mitose e segregação dos cromossomas na análise com todas as fases tumorais ou apenas primeiras fases (ex. "TTK", "ECT2", "CENPF"). Este resultado é consistente com o facto de as células cancerígenas apresentrem um elevado nível de proliferação celular e vai de necontro ao resultado obtido pelos autores deste estudo:
+</p>
+
+> "We found that smoking induces deregulation of this very mitotic process (...) comprises genes that regulate the mitotic spindle formation  (...) such as CENPF. (...) TTK  (linked to cell mitosis through EGFR,a critical drug target for lung adenocarcinoma."
+
+<p style = 'text-align: justify;'>
+As amostras provenientes de indivíduos fumadores apresentavam uma menor expressão de genes relacionados com o processo de resposta de defesa celular e imunologia, em tecido tumoral (ex. "SDC1" e "CIRBP"). Em tecido normal esta tendência inverte-se, sendo este tipo de genes sobrexpressos, entre eles o gene "CYP1B1" que codifica uma enzima capaz de metabolizar procarcinógenos. Este resultado também vai de encontro aos resultados obtidos pelos autores:
+</p>
+
+> "In the non-tumor tissue, current smoking strongly altered immune response genes, consistent with the defense mechanisms of the lung tissue against the acute toxic effects of smoking. (...) Our results are consistent with some previous findings, such as smoking-related alteration of CYP1B1"
+
+<p style = 'text-align: justify;'>
+Uma análise de expressão genética entre antigos fumadores e atuais fumadores demonstrou que, para o critério de significância definido, não existem genes diferencialmente expressos, o que poderá indicar que embora os pacientes já tivessem deixado de fumar há algum tempo as alterações a nível da expressão dos genes se manteve.
+</p>
+
+<p style = 'text-align: justify;'>
+Uma outra análise de expressão diferencial entre amostras provenientes de tecido normal e tecido tumoral demonstrou existirem mais genes subexpressos e menos genes sobrexpressos em tecido tumoral, resultado este também evidente pela análise de clustering hierárquico, havendo uma clara separação entre amostras provenientes de tecido tumoral e normal. Da análise de enriquecimento verifica-se que uma existência de "enriquecimento" estatisticamente significativo em genes cujos processos biológicos se relacionam com a divisão celular, ciclo mitótico e processos catabólicos de açúcares, o que está de acordo com o esperado já que as células cancerígenas evoluem no sentido de alterarem o seu metabolismo de forma a conseguirem uma mais rápida proliferação.
+</p>
+
+<p style = 'text-align: justify;'>
+Relativamente aos genes subexpressos verifica-se uma existência de "enriquecimento" estatisticamente significativo em genes cujos processos biológicos se relacionam com o desenvolvimento do sistema cardiovascular/circulatório, morfogénese e desenvolvimento de vasos sanguíneos. Tal como referido, embora possa parecer contraditório relativamente ao que se sabe sobre o cancro, nomeadamente no que toca ao aumento do mecanismo de angiogénese, sabe-se que em alguns tipos de cancro o mecanismo de angiogénese não é assim tão relevante e é, em muitos casos, diminuido, pelo que o adenocarcinoma pulmonar poderá ser um desses casos.
+</p>
+
+<p style = 'text-align: justify;'>
+Realizada uma análise preditiva usando os métodos de k-vizinhos mais próximos, árvores de regressão e SVMs conclui-se que os métodos apresentam muito boa precisão no que toca à previsão do tecido associado cada amostra, sendo melhor na previsão o método de k-vizinhos mais próximos com um nível de precisão de 97,96% para amostras de tecido normal e 100% para amostras de tecido tumoral. No entanto, para previsão do perfil do indivíduo associado a cada amostra tal não se verifica, estando os níveis de precisão dos três modelos para esta situação por volta e principalmente abaixo dos 50% (com exceção da precisao do modelo de SVM para atuais fumadores, com 87,50%), o que se poderá dever à existência de uma clara separação entre os genes expressos nos dois tipos de tecido, como se verificou na análise de clustering, o que não será assim tão evidente quando se trata de distinguir entre os perfis dos indivíduos.
+</p>
+
+# Referências
+
+
