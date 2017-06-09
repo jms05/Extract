@@ -1,7 +1,7 @@
 ---
-title: Extra√ß√£o Conheciento Bases Dados Biol√≥gicas
+title: ExtraÁ„o Conheciento Bases Dados BiolÛgicas
    <br />Bipolar Disorder and Response to Lithium
-author: "Catarina Sousa pg32934 | Davide Lagoa pg31552 | Jo√£o Silva a72023 <br /> Jos√© Morais pg32943 | Marta Moreno pg32847"
+author: "Catarina Sousa pg32934 | Davide Lagoa pg31552 | Jo„o Silva a72023 <br /> JosÈ Morais pg32943 | Marta Moreno pg32847"
 date: '`r format(Sys.Date(), "%d-%m-%Y")`'
 bibliography: Referencias.bibtex
 output:
@@ -44,18 +44,18 @@ library(affy)
 library(imager)
 ```
 
-# Introdu√ß√£o
+# IntroduÁ„o
 
-> <p style = 'text-align: justify;'>O l√≠tio √© um dos medicamentos mais eficazes no tratamento do **transtorno bipolar**, no entanto a resposta dos pacientes ao qual √© administrado √© bastante heterog√©nea. Apesar de se terem efetuado diversos estudos com esse fim, ainda n√£o foram identificados biomarcadores que possam ser utilizados para monitorizar e prever a resposta ao tratamento com l√≠tio. O estudo a ser analisado procura **avaliar os efeitos do l√≠tio sobre a express√£o g√©nica** ao identificar altera√ß√µes na express√£o de genes espec√≠ficos 1 m√™s ap√≥s o in√≠cio do tratamento, sendo essa informa√ß√£o utilizada para prever os resultados ao fim de 6 meses.
+> <p style = 'text-align: justify;'>O lÌtio È um dos medicamentos mais eficazes no tratamento do **transtorno bipolar**, no entanto a resposta dos pacientes ao qual È administrado È bastante heterogÈnea. Apesar de se terem efetuado diversos estudos com esse fim, ainda n„o foram identificados biomarcadores que possam ser utilizados para monitorizar e prever a resposta ao tratamento com lÌtio. O estudo a ser analisado procura **avaliar os efeitos do lÌtio sobre a express„o gÈnica** ao identificar alteraÁıes na express„o de genes especÌficos 1 mÍs apÛs o inÌcio do tratamento, sendo essa informaÁ„o utilizada para prever os resultados ao fim de 6 meses.
 </p>
 
-> <p style = 'text-align: justify;'> Para o estudo foram recrutados 74 pacientes, sendo que 9 desistiram antes da primeira colheita de sangue e outros 5 apresentaram fraca qualidade ou quantidade insuficiente de RNA, pelo que n√£o constam nos resultados. Os restantes **60 pacientes** foram **divididos em 2 grupos** criados aleatoriamente: um sujeito a tratamento com pelo menos um outro *medicamento que n√£o l√≠tio (OPT)*, e outro que fazia o tratamento anterior acoplado com a *toma de l√≠tio (Li + OPT)*, sendo os grupos constitu√≠dos por 32 e 28 pacientes, respetivamente.
+> <p style = 'text-align: justify;'> Para o estudo foram recrutados 74 pacientes, sendo que 9 desistiram antes da primeira colheita de sangue e outros 5 apresentaram fraca qualidade ou quantidade insuficiente de RNA, pelo que n„o constam nos resultados. Os restantes **60 pacientes** foram **divididos em 2 grupos** criados aleatoriamente: um sujeito a tratamento com pelo menos um outro *medicamento que n„o lÌtio (OPT)*, e outro que fazia o tratamento anterior acoplado com a *toma de lÌtio (Li + OPT)*, sendo os grupos constituÌdos por 32 e 28 pacientes, respetivamente.
 </p>
 
-> <p style = 'text-align: justify;'> Para o grupo *Li + OPT*, 62 genes apresentaram indu√ß√£o diferencial entre os pacientes que responderam ao tratamento e os que n√£o responderam ao tratamento. Os pacientes do grupo *Li + OPT* que responderam ao tratamento apresentavam padr√µes distintos que n√£o foram observados nos pacientes do grupo *OPT* com resposta ao tratamento, sendo que estes √∫ltimos eram mais parecidos com os pacientes do grupo *Li + OPT* sem resposta ao tratamento.
+> <p style = 'text-align: justify;'> Para o grupo *Li + OPT*, 62 genes apresentaram induÁ„o diferencial entre os pacientes que responderam ao tratamento e os que n„o responderam ao tratamento. Os pacientes do grupo *Li + OPT* que responderam ao tratamento apresentavam padrıes distintos que n„o foram observados nos pacientes do grupo *OPT* com resposta ao tratamento, sendo que estes ˙ltimos eram mais parecidos com os pacientes do grupo *Li + OPT* sem resposta ao tratamento.
 </p>
 
-> <p style = 'text-align: justify;'> Tamb√©m foram realizados **testes utilizando RT-PCR** em tempo real de certos genes, tendo-se verificado que os resultados desta an√°lise foram **similares aos obtidos com microarrays**, com os pacientes *Li + OPT* com resposta ao tratamento a demonstrarem uma maior indu√ß√£o desses genes do que os outros grupos. No entanto, com a exce√ß√£o do gene *BCL2L1*, os resultados n√£o foram estatisticamente significativos, o que corrobora o facto de que nos estudos com *microarrays* a maior diferen√ßa foi observada para *BCL2L1* [@beech2014gene].
+> <p style = 'text-align: justify;'> TambÈm foram realizados **testes utilizando RT-PCR** em tempo real de certos genes, tendo-se verificado que os resultados desta an·lise foram **similares aos obtidos com microarrays**, com os pacientes *Li + OPT* com resposta ao tratamento a demonstrarem uma maior induÁ„o desses genes do que os outros grupos. No entanto, com a exceÁ„o do gene *BCL2L1*, os resultados n„o foram estatisticamente significativos, o que corrobora o facto de que nos estudos com *microarrays* a maior diferenÁa foi observada para *BCL2L1* [@beech2014gene].
 </p>
 
 
@@ -70,7 +70,7 @@ library(imager)
 ```
 
 > <p style = 'text-align: justify;'>
-Convers√£o do *DataSet* para um *expressionset*:
+Convers„o do *DataSet* para um *expressionset*:
 </p>
 
 ```{r expressionset, message = FALSE, warning = FALSE, dependson = "dataset"}
@@ -78,14 +78,14 @@ Convers√£o do *DataSet* para um *expressionset*:
 data
 ```
 > <p style = 'text-align: justify;'>
-Dimens√£o do *DataSet*: 
+Dimens„o do *DataSet*: 
 </p>
 ```{r , message = FALSE}
 dim(data) 
 ```
 
 > <p style = 'text-align: justify;'>
-Convers√£o do *DataSet* para uma matiz num√©rica, contendo as *samples* nas colunas e *features* nas linhas: 
+Convers„o do *DataSet* para uma matiz numÈrica, contendo as *samples* nas colunas e *features* nas linhas: 
 </p>
 ```{r , message = FALSE}
 exp = exprs(data)
@@ -94,7 +94,7 @@ exp[5:15,1:5]
 ```
 
 > <p style = 'text-align: justify;'>
-Fazendo um boxplot com o logaritmo de base 2 dos dados de express~o para todas as amostras facilmente verificamos a escala e distribui√£c√£o dos dados. As caixas apresentam forma e centro semelhantes entre amostras, indicando que os dados de express√£o j√° normalizados, estes dados apesar de normalizados n√£o podem ser utilizados na an√°lise pois ainda possuem valores omissos.
+Fazendo um boxplot com o logaritmo de base 2 dos dados de express„o para todas as amostras facilmente verificamos a escala e distribuiÁ„o dos dados. As caixas apresentam forma e centro semelhantes entre amostras, indicando que os dados de express„o j· est„o normalizados,no entanto n„o podem ser diretamente utilizados na an·lise pois ainda possuem valores omissos.
 </p>
 
 ```{r boxplot, fig.width = 10, fig.align = 'center',  message = FALSE, warning = FALSE}
@@ -116,7 +116,7 @@ plot(im,axes=FALSE)
 ```{r , message = FALSE, warning = FALSE, dependson = "dataset"}
 abstract(data)
 ```
-> <p style = 'text-align: justify;'> Exemplo  pare verificar o nome de algumas das amostras e identificados dos genes:
+> <p style = 'text-align: justify;'> Exemplo  pare verificar o nome de algumas das amostras e identificadores dos genes:
 </p>
 
 ```{r , message = FALSE, warning = FALSE, dependson = "dataset"}
@@ -124,12 +124,12 @@ sampleNames(data)[1:10]
 featureNames(data)[1:8]
 ```
 
-> <p style = 'text-align: justify;'> De maneira a solidificar o nosso conhecimento sobre o *DataSet* em estudo √© muito √∫til termos uma ideia dos atributos dispon√≠veis. 
+> <p style = 'text-align: justify;'> De maneira a solidificar o nosso conhecimento sobre o *DataSet* em estudo È muito ˙til termos uma ideia dos atributos disponÌveis. 
 </p>
 ```{r , message = FALSE, warning = FALSE, dependson = "dataset"}
 varMetadata(data)
 ```
-> <p style = 'text-align: justify;'> A execu√ß√£o do comando anterior permitiu identificar no nosso *DataSet* os seguintes atributos, sendo que nenhum deles apresenta descri√ß√£o:
+> <p style = 'text-align: justify;'> A execuÁ„o do comando anterior permitiu identificar no nosso *DataSet* os seguintes atributos, sendo que nenhum deles apresenta descriÁ„o:
 </p>
 
 * sample
@@ -139,7 +139,7 @@ varMetadata(data)
 * description
 * time
 
-> <p style = 'text-align: justify;'> Para aprofundar o nosso conhecimento sobre este *DataSet*, corremos os seguintes comandos de modo a organizar algumas ideias sobre os atributos dispon√≠veis numa tabela. 
+> <p style = 'text-align: justify;'> Para aprofundar o nosso conhecimento sobre este *DataSet*, corremos os seguintes comandos de modo a organizar algumas ideias sobre os atributos disponÌveis numa tabela. 
 </p>
 
 ```{r , message = FALSE, warning = FALSE,results="hide"}
@@ -153,17 +153,17 @@ data$time
 
 Nome do Atributo | Significado  | Valores Distintos  | Valores Distintos 
 ------------- | ------------- | ------------- | -------------
-sample | Amostras Dispon√≠veis  | 120 | "GSM1105438" "GSM1105486"... 
-agent | Tipo de Tratamentot | 2 |  "control" "lithium"
+sample | Amostras DisponÌveis  | 120 | "GSM1105438" "GSM1105486"... 
+agent | Tipo de Tratamento | 2 |  "control" "lithium"
 other| Resposta ao Tratamento | 2 | "non-responder" "responder"
-individual | Indiv√≠duos em An√°lise  | 60 | "Li+OPT_1" "Li+OPT_10"...
-description | Descri√ß√£o do Sample | 120 | NULL
+individual | IndivÌduos em An·lise  | 60 | "Li+OPT_1" "Li+OPT_10"...
+description | DescriÁ„o do Sample | 120 | NULL
 time |  Momento em que foi obtida a amostra  | 2 | "1 month" "baseline"
 
-Table: **Tabela 1** - Informa√ß√£o contida no *DataSet* utilizado.
+Table: **Tabela 1** - InformaÁ„o contida no *DataSet* utilizado.
 
 > <p style = 'text-align: justify;'> 
-Resposta dos diferentes grupos, *control* e *lithium* ao tratamento aplicado:
+Resposta dos diferentes grupos, *control* e *lithium*, ao tratamento aplicado:
 </p>
 
 ```{r , message = FALSE, warning = FALSE,include=FALSE}
@@ -180,7 +180,7 @@ addmargins(table(data$agent,data$other))
 ```
 ##Tratamento dos Dados
 > <p style = 'text-align: justify;'>
-Verificar a exist√™ncia registos com valores omissos *NA's* no *DataSet* :
+Verificar a existÍncia registos com valores omissos (*NA*) no *DataSet* :
 </p>
 
 ```{r NAs, message = FALSE, warning = FALSE}
@@ -189,24 +189,24 @@ divisaoCI
 sum(divisaoCI)
 ```
 > <p style = 'text-align: justify;'>
-Com a execu√ß√£o dos comandos anteriores verificamos que existem um total de 784 registos incompletos *DataSet* e 47323 registos completos, fazendo assim um total de 48107, como esperado. De forma a tornar poss√åvel a an√°lise dos dados, procedeu-se √† remo√ß√£o dos valores omissos.  
+Com a execuÁ„o dos comandos anteriores verificamos que existem um total de 784 registos incompletos *DataSet* e 47323 registos completos, fazendo assim um total de 48107, como esperado. De forma a tornar possÌvel a an·lise dos dados, procedeu-se ‡ remoÁ„o dos valores omissos.  
 </p>
 ```{r , message = FALSE, warning = FALSE}
 exp_complete=na.exclude(exp)
 dim(exp_complete)
 ```
 > <p style = 'text-align: justify;'>
-Removendo os casos imcompletos verificamos que como suposto a dimen√ß√£o do *DataSet* foi reduzido em 784.
+Removendo os casos imcompletos verificamos, que como era suposto, a dimens„o do *DataSet* foi reduzido para 784.
 </p>
 > <p style = 'text-align: justify;'>
-Para verificar se os nossos dados seguiam uma distribui√ß√£o normal (0,1), calcul√°mos a m√®dia e desvio padr√£o dos dados do nosso 
+Para verificar se os nossos dados seguiam uma distribuiÁ„o normal (0,1), calcul·mos a mÈdia e desvio padr„o dos dados do nosso 
 *DataSet* com os seguintes comandos: 
 </p>
 ```{r , message = FALSE, warning = FALSE}
 c(mean(exp_complete),sd(exp_complete))
 ```
 > <p style = 'text-align: justify;'>
-com isto verificamos que os nosso dados n√£o seguem uma distribui√ß√£o normal (0,1). Pelo que se torna necess√°rio normalizar-los recorrendo aos seguintes comandos: 
+Com isto verificamos que os nosso dados n„o seguem uma distribuiÁ„o normal (0,1). Pelo que se torna necess·rio normalizar-los recorrendo aos seguintes comandos: 
 </p>
 
 ```{r , message = FALSE, warning = FALSE}
@@ -214,17 +214,17 @@ exp_norm=scale(exp_complete)
 c(mean(exp_norm),sd(exp_norm))
 ```
 > <p style = 'text-align: justify;'>
-agora os nosso dados seguem aproximadamente uma distribui√ß√£o normal (0,1). Pelo que a partir de agora ser√£o estes os dados a utilizar.
+Agora os nosso dados seguem aproximadamente uma distribuiÁ„o normal (0,1), pelo que a partir de agora ser„o estes os dados a utilizar.
 </p>
 
 > <p style = 'text-align: justify;'>
-De seguida, procurou-se remover os genes que possuiam valores pouco dispares ao longo das amostras, uma vez que n√£o apresentam variabilidade significante para a distin√ß√£o dos grupos amostrais.Para tal, procedeu-se sele√ß√£o dos genes cujo desvio padr√£o dos valores de express√£o ao longo das amostras √® duas vezes superior do que a mediana dos desvios padr√£o de todos os genes.
+De seguida, procurou-se remover os genes que possuiam valores pouco dispares ao longo das amostras, uma vez que n„o apresentam variabilidade significante para a distinÁ„o dos grupos amostrais. Para tal, procedeu-se seleÁ„o dos genes cujo desvio padr„o dos valores de express„o ao longo das amostras Ë duas vezes superior do que a mediana dos desvios padr„o de todos os genes.
 </p>
 
 ```{r , fig.align = 'center', message = FALSE, warning = FALSE}
 sds=rowSds(exp_norm)
 m=median(sds)
-hist(sds,breaks=50,col='mistyrose',xlab = 'Desvio padr√£o',ylab = 'Frequ√™ncia',main = NULL)
+hist(sds,breaks=50,col='mistyrose',xlab = 'Desvio padr„o',ylab = 'FrequÍncia',main = NULL)
 abline(v=m*2,col="red",lwd=4,lty=2)
 exp_filtrado=exp_complete[sds>=2*m,]
 dim(exp_filtrado)
@@ -234,11 +234,11 @@ Com este passo, reduziu-se os dados a utilizar nos seguintes passos para 7671 fe
 </p>
 
 ```{r , fig.align = 'center', message = FALSE, warning = FALSE}
-hist(rowSds(exp_filtrado),breaks=50,col='mistyrose',xlab = 'Desvio padr√£o',ylab = 'Frequ√™ncia',main = NULL)
+hist(rowSds(exp_filtrado),breaks=50,col='mistyrose',xlab = 'Desvio padr„o',ylab = 'FrequÍncia',main = NULL)
 ```
 
 > <p style = 'text-align: justify;'>
-Aplica√ß√£o do filtro *Flat Patterns* aos dados originais e cria√ß√£o de um novo *ExpressionSet* para guardar estes dados.
+AplicaÁ„o do filtro *Flat Patterns* aos dados originais e criaÁ„o de um novo *ExpressionSet* para guardar estes dados:
 </p>
 
 ```{r , fig.align = 'center', message = FALSE, warning = FALSE}
@@ -246,7 +246,8 @@ exp_filtrado2=data[sds>=2*m,]
 ```
 
 > <p style = 'text-align: justify;'>
-Para realizarmos testes de hip√≥teses param√©tricos (t-test) foi necess√°rio normalizar o *ExpressionSet* (exp_filtrado2) utilizado, mantendo os filtros (remo√ß√£o de valores omissos e aplica√ß√£o de filtros *"Flat Patterns"*). Para tal efeito foi preciso desenvolver a seguinte fun√ß√£o respons√°vel por dado um *ExpressionSet* com casso omissos e os nomes das colunas da matriz a este correpondente sem valores omissos.
+Para realizarmos testes de hipÛteses paramÈtricos (t-test) foi necess·rio normalizar o *ExpressionSet* (exp_filtrado2) utilizado, mantendo os filtros (remoÁ„o de valores omissos e aplicaÁ„o de filtros *"Flat Patterns"*). Para tal, foi desenvolvida uma funÁ„o que recebe um *ExpressionSet* com valores omissos, e uma lista com os nomes das linhas da matriz (que ser„o convertidos em Ìndices), devolvendo um *ExpressionSet* sem os valores omissos.
+
 </p>
 ```{r funcao, fig.align = 'center', message = FALSE, warning = FALSE}
 getFromExpression <- function(expressionFonte,valuesOK)
@@ -278,16 +279,16 @@ normalized_exp_filtrado2=ExpressionSet(assayData = exp_filtrado2_matrix, phenoDa
 c(mean(exprs(normalized_exp_filtrado2)),sd(exprs(normalized_exp_filtrado2)),sum(is.na(exprs(normalized_exp_filtrado2))))
 ```
 > <p style = 'text-align: justify;'>
- O c√≥digo acima apresentado √© respos√°vel pela remo√ß√£o dos valores omissos e normaliza√ß√£o do *ExprecionSet* que ser√° utilizado de agora em diante. Como √© possivel de verificar pelo *output* do √∫ltimo comando executado. 
+O cÛdigo acima apresentado È respos·vel pela remoÁ„o dos valores omissos e normalizaÁ„o do *ExprecionSet*, a ser utilizado nos restantes passos, como È possivel verificar atravÈs dos valores da mÈdia e desvido padr„o, assimcomo o n˙mero de valores omissos no *output* do ˙ltimo comando executado.
 </p>
 
-#An√°lise Express√£o Diferencial
+#An·lise Express„o Diferencial
 
 > <p style = 'text-align: justify;'>
-Neste passo foram identificados, atrav√©s de testes de hip√≥teses, os 25 genes que apresentavam menor *p-value*, ou seja, os genes cuja evid√™ncia estat√≠stica da express√£o g√©nica diferencial foi mais significativa. Os resultados obtidos foram registados nas seguintes tabelas e organizados segundo o nome do gene, identificador do gene e respetiva fun√ß√£o. 
+Neste passo foram identificados, atravÈs de testes de hipÛteses, os 25 genes que apresentavam menor *p-value*, ou seja, os genes cuja evidÍncia estatÌstica da express„o gÈnica diferencial foi mais significativa. Os resultados obtidos foram registados nas tabelas seguintes e organizados segundo o nome do gene, identificador do gene e respetiva funÁ„o. 
 </p>
 
-##Controlo x L√≠tio (1 m√™s de tratamento)
+##Controlo x LÌtio (1 mÍs de tratamento)
 
 ```{r , fig.align = 'center', message = FALSE, warning = FALSE}
 test1=rowttests(normalized_exp_filtrado2[normalized_exp_filtrado2$time=="1 month"],"agent")
@@ -299,12 +300,11 @@ geneFunction1=unlist(mget(nomes1, illuminaHumanv4GENENAME))
 ```
 
 > <p style = 'text-align: justify;'>
-Na seguinte tabela encontram-se os 25 genes com maior evid√™ncia estat√≠stica de express√£o g√©nica diferencial no que diz respeito ao atributo "agent". Este teste foi feito com o intuito de perceber se, ap√≥s 1 m√™s de tratamento em quest√£o (com l√≠tio), existem diferen√ßas estatisticamente
-significativas na express√£o dos genes. De facto, constatou-se que respectivos p-values (p-values < 0.01) permitem rejeitar a hip√≥tese nula, pelo
-que podemos assumir que os genes das amostras em condi√ß√£o de controlo e condi√ß√£o de tratamento com l√≠tio s√£o diferencialmente expressos. Numa primeira an√°lise, isto pode indiciar uma influencia do l√≠tio na express√£o destes genes.
+Na seguinte tabela encontram-se os 25 genes com maior evidÍncia estatÌstica de express„o gÈnica diferencial no que diz respeito ao atributo *agent*. Este teste foi feito com o intuito de perceber se, apÛs 1 mÍs de tratamento com lÌtio, existem diferenÁas significativas estatisticamente significativas na express„o dos genes. De facto, constatou-se que os respectivos p-values (p-values < 0.01) permitem rejeitar a hipÛtese nula, pelo
+que podemos assumir que os genes das amostras em condiÁ„o de controlo e condiÁ„o de tratamento com lÌtio s„o diferencialmente expressos. Numa primeira an·lise, isto poder· indiciar uma influÍncia do lÌtio na express„o destes genes.
 </p>
 
-Nome do Gene | Nome da Vari√°vel | *p-value* | Fun√ß√£o do Gene 
+Nome do Gene | Nome da Vari·vel | *p-value* | FunÁ„o do Gene 
 ------------- | ------------- | ------------- | ------------- 
 GRHL1 | ILMN_1769934 | 7.684359e-05|grainyhead like transcription factor 1
 CES1 |ILMN_2359945  | 1.634422e-04|carboxylesterase 1
@@ -332,9 +332,9 @@ SP140L | ILMN_1658858|2.211787e-03|SP140 nuclear body protein like
 PTH | ILMN_2202048 |2.467427e-03|parathyroid hormone
 NA | ILMN_1898268|2.518019e-03|NA
 
-Table: **Tabela 2** -  25 Genes mais expressivos no teste estat√≠stico entre os grupos de Controlo e L√≠tio ap√≥s 1 m√™s de tratamento.
+Table: **Tabela 2** -  Os 25 Genes com maior express„o diferencial no teste estatÌstico entre os grupos Controlo e LÌtio apÛs 1 mÍs de tratamento.
 
-##Controlo x Litio (*Baseline*)
+##Controlo x LÌtio (*Baseline*)
 ```{r , fig.align = 'center', message = FALSE, warning = FALSE}
 test2=rowttests(normalized_exp_filtrado2[normalized_exp_filtrado2$time=="baseline"],"agent")
 sign_pvalue2=test2[test2$p.value<0.01,]
@@ -345,10 +345,10 @@ geneFunction2=unlist(mget(nomes2, illuminaHumanv4GENENAME))
 ```
 
 > <p style = 'text-align: justify;'>
-Na seguinte tabela encontram-se os 25 genes com maior evid√™ncia estat√≠stica de express√£o g√©nica diferencial no que diz respeito ao atributo *agent*. Este teste foi feito com o intuito de perceber se existem diferen√ßas estatisticamente significativas na express√£o dos genes no in√≠cio da experi√™ncia. De facto, constatou-se que respectivos *p-values* (p-values < 0.01) permitem rejeitar a hip√≥tese nula, pelo que podemos assumir que os genes das amostras em condi√ß√£o de controlo e condi√ß√£o de tratamento com l√≠tio no √≠nicio do estudo s√£o diferencialmente expressos. Numa primeira an√°lise, isto pode indiciar uma influ√™ncia do l√≠tio na express√£o destes genes. Tendo em conta os genes que obtivemos na tabela anterior, relativos a 1 m√™s de tratamento, podemos verificar que estes n√£o s√£o os mesmos obtidos na tabela seguinte. Estes resultados suportam a hip√≥tese de que os genes obtidos na tabela anterior possam ser, de facto, influenciados ao n√≠vel da sua express√£o pelo tratamento com l√≠tio, uma vez que estes n√£o apresentavam a maior diferen√ßa de express√£o, comparativamente a outros genes, no in√≠cio da experi√™ncia. 
+Na seguinte tabela encontram-se os 25 genes com maior evidÍncia estatÌstica de express„o gÈnica diferencial no que diz respeito ao atributo *agent*. Este teste foi feito com o intuito de perceber se existem diferenÁas estatisticamente significativas na express„o dos genes no inÌcio da experiÍncia. De facto, constatou-se que respectivos *p-values* (p-values < 0.01) permitem rejeitar a hipÛtese nula, pelo que podemos assumir que os genes das amostras em condiÁ„o de controlo e condiÁ„o de tratamento com lÌtio no Ìnicio do estudo s„o diferencialmente expressos. Numa primeira an·lise, isto pode indiciar uma influÍncia do lÌtio na express„o destes genes. Tendo em conta os genes que obtivemos na tabela anterior, relativos a 1 mÍs de tratamento, podemos verificar que estes n„o s„o os mesmos obtidos na tabela seguinte. Estes resultados suportam a hipÛtese de que os genes obtidos na tabela anterior possam ser, de facto, influenciados ao nÌvel da sua express„o pelo tratamento com lÌtio, uma vez que estes n„o apresentavam a maior diferenÁa de express„o, comparativamente a outros genes, no inÌcio da experiÍncia. 
 </p>
 
-Nome do Gene | Nome da Vari√°vel | *p-value* | Fun√ß√£o do Gene 
+Nome do Gene | Nome da Vari·vel | *p-value* | FunÁ„o do Gene 
 ------------- | ------------- | ------------- | -------------
 SLC9B1|ILMN_1757606|1.924285e-05|solute carrier family 9 member B1
 TAGLN2|ILMN_1766539|2.966484e-05|transgelin 2
@@ -376,9 +376,9 @@ RFX3|ILMN_1779488|1.576887e-03|regulatory factor X3
 NA|ILMN_1721926|1.669918e-03| NA
 LAMP3|ILMN_2170813|1.823372e-03|lysosomal associated membrane protein 3
 
-Table: **Tabela 3** - 25 Genes mais expressivos no teste estat√≠stico entre os grupos de Controlo e L√≠tio no instante incial.
+Table: **Tabela 3** - Os 25 Genes com maior express„o diferencial no teste estatÌstico entre os grupos de Controlo e LÌtio no instante incial.
 
-##*Baseline* x 1 m√™s de tratamento (respondem ao tratamento com l√≠tio)
+##*Baseline* x 1 mÍs de tratamento (respondem ao tratamento com lÌtio)
 
 ```{r , fig.align = 'center', message = FALSE, warning = FALSE}
 test3=rowttests(normalized_exp_filtrado2[normalized_exp_filtrado2$other=="responder" & normalized_exp_filtrado2$agent=="lithium"],"time")
@@ -390,10 +390,10 @@ geneFunction3=unlist(mget(nomes3, illuminaHumanv4GENENAME))
 ```
 
 > <p style = 'text-align: justify;'>
-Na seguinte tabela encontram-se os genes com maior evid√™ncia estat√≠stica de express√£o g√©nica diferencial no que diz respeito ao atributo *time* nas condi√ß√µes de resposta e tratamento com l√≠tio. Este teste foi feito com o intuito de perceber, dentro dos indiv√≠duos que foram tratados com l√≠tio e responderam ao tratamento, quais os genes que ap√≥s 1 m√™s do tratamento em quest√£o (com l√≠tio) apresentavam diferen√ßas de express√£o estatisticamente significativas relativamente √† condi√ß√£o inicial (baseline). De facto, constatou-se que respectivos *p-values* (*p-values* < 0.01) permitem rejeitar a hip√≥tese nula, pelo que podemos assumir que os genes dos indiv√≠duos que foram tratados com l√≠tio e responderam ao tratamento s√£o diferencialmente expressos no inic√≠o do tratamento e ap√≥s um m√™s do come√ßo do mesmo. 
+Na seguinte tabela encontram-se os genes com maior evidÍncia estatÌstica de express„o gÈnica diferencial no que diz respeito ao atributo *time* nas condiÁıes de resposta e tratamento com lÌtio. Este teste foi feito com o intuito de perceber, de entre os indivÌduos que foram tratados com lÌtio e responderam ao tratamento, quais os genes que apÛs 1 mÍs do tratamento em quest„o (com lÌtio) apresentavam diferenÁas de express„o estatisticamente significativas relativamente ‡ condiÁ„o inicial (*baseline*). De facto, constatou-se que respetivos *p-values* (*p-values* < 0.01) permitem rejeitar a hipÛtese nula, pelo que podemos assumir que os genes dos indivÌduos que foram tratados com lÌtio e responderam ao tratamento s„o diferencialmente expressos no inicÌo do tratamento e um mÍs do comeÁo do mesmo apÛs. 
 </p>
 
-Nome do Gene | Nome da Vari√°vel | *p-value* | Fun√ß√£o do Gene 
+Nome do Gene | Nome da Vari·vel | *p-value* | FunÁ„o do Gene 
 ------------- | ------------- | ------------- | -------------
 FKBP5|ILMN_1778444|0.002436297|FK506 binding protein 5
 LINC00293|ILMN_3311150|0.003073925|long intergenic non-protein coding RNA 293
@@ -401,12 +401,12 @@ CHM|ILMN_1709112|0.003880609|CHM, Rab escort protein 1
 COX15|ILMN_2292696|0.007911662|COX15, cytochrome c oxidase assembly homolog
 GTF2IRD2B|ILMN_2180997|0.009325567|GTF2I repeat domain containing 2B
 
-Table: **Tabela 4** - 5 Genes mais expressivos no teste estat√≠stico entre os grupos de que responderam e n√£o responderam.
+Table: **Tabela 4** - Os 5 Genes com maior express„o diferencial no teste estatÌstico entre os resultados no *baseline* e ao fim de 1 mÍs no grupo que respondeu ao tratamento.
 
-##Responde x N√£o responde (1 m√™s de Tratamento e Litio)
+##Responde x N„o responde (1 mÍs de Tratamento e Litio)
 
 > <p style = 'text-align: justify;'>
-Na seguinte tabela encontram-se os 25 genes com maior evid√™ncia estat√≠stica de express√£o g√©nica diferencial no que diz respeito ao atributo *other* ap√≥s 1 m√™s de tratamento com l√≠tio. Este teste foi feito com o intuito de perceber, dentro dos indiv√≠duos que foram tratados com l√≠tio durante 1 m√™s, quais os genes que apresentavam as maiores diferen√ßas de express√£o quando comparados os indiv√≠duos que respondem e n√£o respondem ao tratamento. A import√¢ncia inside na possibilidade da resposta dos pacientes ao tratamento com l√≠tio possa estar associada √† regula√ß√£o da express√£o de alguns genes tornando-os, assim poss√≠veis alvos para aumentar a efic√°cia do tratamento. 
+Na seguinte tabela encontram-se os 25 genes com maior evidÍncia estatÌstica de express„o gÈnica diferencial no que diz respeito ao atributo *other* apÛs 1 mÍs de tratamento com lÌtio. Este teste foi feito com o intuito de perceber, de entre os indivÌduos que foram tratados com lÌtio durante 1 mÍs, quais os genes que apresentavam as maiores diferenÁas de express„o quando comparados os indivÌduos que respondem e n„o respondem ao tratamento. A import‚ncia incide na possibilidade da resposta dos pacientes ao tratamento com lÌtio possa estar associada ‡ regulaÁ„o da express„o de alguns genes tornando-os, assim, possÌveis alvos para aumentar a efic·cia do tratamento.
 </p>
 
 ```{r , fig.align = 'center', message = FALSE, warning = FALSE}
@@ -418,7 +418,7 @@ geneNames4=unlist(mget(nomes4, illuminaHumanv4SYMBOL))
 geneFunction4=unlist(mget(nomes4, illuminaHumanv4GENENAME))
 ```
 
-Nome do Gene | Nome da Vari√°vel | *p-value* | Fun√ß√£o do Gene 
+Nome do Gene | Nome da Vari·vel | *p-value* | FunÁ„o do Gene 
 ------------- | ------------- | ------------- | -------------
 KIAA1191|ILMN_2376133|1.196106e-05|KIAA1191
 SLC9A3R1|ILMN_1680925|1.222005e-05|SLC9A3 regulator 1
@@ -446,16 +446,16 @@ CDC26|ILMN_2210837|2.729218e-03|cell division cycle 26
 STRADA|ILMN_2315694|2.899831e-03|STE20-related kinase adaptor alpha
 KIAA0355|ILMN_1765696|3.068808e-03| KIAA0355
 
-Table: **Tabela 5** - 25 Genes mais expressivos no teste estat√≠stico entre os grupos de que responderam e n√£o responderam ap√≥s 1 m√™s de tratamento.
+Table: **Tabela 5** - 25 Genes mais expressivos no teste estatÌstico entre os grupos de que responderam e n„o responderam apÛs 1 mÍs de tratamento.
 
 #Clustering de Genes e Amostras
 
-#An√°lise Preditiva
+#An·lise Preditiva
 
 #Resultados Obtidos
 
-##Discuss√£o
+##Discuss„o
 
-#Conclus√£o
+#Conclus„o
 
-#Refer√™ncias
+#ReferÍncias
