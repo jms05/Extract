@@ -655,8 +655,26 @@ Na seguinte tabela encontram-se os 25 genes com maior evidência estatística de
 </tr>
 </tbody>
 </table>
+<p><strong>Analise de enriquecimento para os genes diferencialmente expressos</strong></p>
+<blockquote>
+<p style="text-align: justify;">
+Após a realização do <em>t-teste</em>, procedemos à análise de enriquecimento a fim de obtermos os termos GO associados aos genes mais diferencialmente expressos.
+</p>
+</blockquote>
+<pre class="sourceCode r"><code class="sourceCode r">filtrados1 =<span class="st"> </span><span class="kw">featureNames</span>(normalized_exp_filtrado2) 
+entrezID1=<span class="st"> </span><span class="kw">unlist</span>(<span class="kw">mget</span>(filtrados1, illuminaHumanv4ENTREZID))  
+pvalue1=<span class="st"> </span>test1$p.value&lt;<span class="fl">0.01</span>
+pvalFilt =<span class="st"> </span>normalized_exp_filtrado2[pvalue1,]
+entrezIdSel1 =<span class="st"> </span><span class="kw">unlist</span>(<span class="kw">mget</span>(<span class="kw">featureNames</span>(pvalFilt), illuminaHumanv4ENTREZID))
+GO1 =<span class="st"> </span><span class="kw">new</span>(<span class="st">&quot;GOHyperGParams&quot;</span>, <span class="dt">geneIds=</span>entrezIdSel1, <span class="dt">universeGeneIds=</span>entrezID1, <span class="dt">annotation=</span><span class="st">&quot;illuminaHumanv4.db&quot;</span>, <span class="dt">ontology=</span><span class="st">&quot;BP&quot;</span>, <span class="dt">pvalueCutoff=</span><span class="fl">0.025</span>, <span class="dt">testDirection=</span><span class="st">&quot;over&quot;</span>)
+GO1_=<span class="st"> </span><span class="kw">hyperGTest</span>(GO1)</code></pre>
+<blockquote>
+<p style="text-align: justify;">
+Na seguinte tabela, estão presentes os quinze termos <em>GO</em> com maior associação ao atributo <em>agent</em> (controlo/lítio), ao fim de 1 mês de tratamento. O termo mais presente é <em>regulation of growth</em>, o que nos indica que há genes, dentro dos mais diferencialmente expressos, envolvidos na regulação do crescimento celular. O lítio impede a formação de <em>inositol</em>, sendo responsável pelo aumento de <em>Ca+</em> e <em>Na+</em> no citoplasma neuronal, que por sua vez, nesta doença, aumenta o período refratário e a libertação de neurotransmissores, controlando assim, os sintomas. Assim, havendo um aumento destes iões no citoplasma dos neurónios há, consequentemente, um aumento destes. Isto pode ser uma explicação para de o termo <em>GO</em> mais presente, dentro dos genes mais diferencialmente expressos, estar associado à regulação do crescimento celular, podendo isto ser um indício da influência do lítio na expressão dos genes.
+</p>
+</blockquote>
 <table>
-<caption><strong>Tabela 28931381248940</strong> - Tabela com os 15 termos GO mais associados aos genes diferencialmente expressos no que diz respeito à distinção das amostras de controlo e lítio ao fim de 1 mês de tratamento.</caption>
+<caption><strong>Tabela 35375573895</strong> - Tabela com os 15 termos GO mais associados aos genes diferencialmente expressos no que diz respeito à distinção das amostras de controlo e lítio ao fim de 1 mês de tratamento.</caption>
 <thead>
 <tr class="header">
 <th align="left">ID de GO</th>
@@ -667,43 +685,43 @@ Na seguinte tabela encontram-se os 25 genes com maior evidência estatística de
 </thead>
 <tbody>
 <tr class="odd">
-<td align="left">GO 0042045</td>
+<td align="left">GO-0042045</td>
 <td align="left">0.004056914</td>
 <td align="left">2</td>
 <td align="left">epithelial fluid transport</td>
 </tr>
 <tr class="even">
-<td align="left">GO 0006826</td>
+<td align="left">GO-0006826</td>
 <td align="left">0.005561774</td>
 <td align="left">3</td>
 <td align="left">iron ion transport</td>
 </tr>
 <tr class="odd">
-<td align="left">GO 0006901</td>
+<td align="left">GO-0006901</td>
 <td align="left">0.005561774</td>
 <td align="left">3</td>
 <td align="left">vesicle coating</td>
 </tr>
 <tr class="even">
-<td align="left">GO 0048207</td>
+<td align="left">GO-0048207</td>
 <td align="left">0.005561774</td>
 <td align="left">3</td>
 <td align="left">vesicle targeting, rough ER to cis-Golgi</td>
 </tr>
 <tr class="odd">
-<td align="left">GO 0048208</td>
+<td align="left">GO-0048208</td>
 <td align="left">0.005561774</td>
 <td align="left">3</td>
 <td align="left">COPII vesicle coating</td>
 </tr>
 <tr class="even">
-<td align="left">GO 0001825</td>
+<td align="left">GO-0001825</td>
 <td align="left">0.006003791</td>
 <td align="left">2</td>
 <td align="left">blastocyst formation</td>
 </tr>
 <tr class="odd">
-<td align="left">GO 0048199</td>
+<td align="left">GO-0048199</td>
 <td align="left">0.006506969</td>
 <td align="left">3</td>
 <td align="left">vesicle targeting, to, from or within Golgi</td>
@@ -721,16 +739,16 @@ Na seguinte tabela encontram-se os 25 genes com maior evidência estatística de
 <td align="left">vesicle targeting</td>
 </tr>
 <tr class="even">
-<td align="left">GO-0000183</td>
-<td align="left">0.010909296</td>
-<td align="left">2</td>
-<td align="left">chromatin silencing at rDNA</td>
-</tr>
-<tr class="odd">
 <td align="left">GO-0006626</td>
 <td align="left">0.008828329</td>
 <td align="left">4</td>
 <td align="left">protein targeting to mitochondrion</td>
+</tr>
+<tr class="odd">
+<td align="left">GO-0000183</td>
+<td align="left">0.010909296</td>
+<td align="left">2</td>
+<td align="left">chromatin silencing at rDNA</td>
 </tr>
 <tr class="even">
 <td align="left">GO-0070633</td>

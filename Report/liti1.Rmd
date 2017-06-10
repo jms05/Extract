@@ -29,6 +29,7 @@ biocLite()
 #biocLite("affydata")
 #biocLite("affy")
 #biocLite("illuminaHumanv4.db")
+biocLite("GOstats")
 
 library(Biobase) 
 library(GEOquery)
@@ -42,6 +43,7 @@ library(matrixStats)
 library(affydata)
 library(affy)
 library(imager)
+library(GOstats)
 ```
 
 # Introdução
@@ -334,8 +336,30 @@ NA | ILMN_1898268|2.518019e-03|NA
 
 Table: **Tabela 2928936825983** -  Os 25 Genes com maior expressão diferencial no teste estatístico entre os grupos Controlo e Lítio após 1 mês de tratamento.
 
+**Analise de enriquecimento para os genes diferencialmente expressos**
+
+> <p style = 'text-align: justify;'>
+Após a realização do *t-teste*, procedemos à análise de enriquecimento a fim de obtermos os termos GO associados aos genes mais diferencialmente expressos.
+</p>
+
+
+```{r , fig.align = 'center', message = FALSE, warning = FALSE}
+filtrados1 = featureNames(normalized_exp_filtrado2) 
+entrezID1= unlist(mget(filtrados1, illuminaHumanv4ENTREZID))  
+pvalue1= test1$p.value<0.01
+pvalFilt = normalized_exp_filtrado2[pvalue1,]
+entrezIdSel1 = unlist(mget(featureNames(pvalFilt), illuminaHumanv4ENTREZID))
+GO1 = new("GOHyperGParams", geneIds=entrezIdSel1, universeGeneIds=entrezID1, annotation="illuminaHumanv4.db", ontology="BP", pvalueCutoff=0.025, testDirection="over")
+GO1_= hyperGTest(GO1)
+```
+
+ 
+> <p style = 'text-align: justify;'>
+Na seguinte tabela, estão presentes os quinze termos *GO* com maior associação ao atributo *agent* (controlo/lítio), ao fim de 1 mês de tratamento. O termo mais presente é *regulation of growth*, o que nos indica que há genes, dentro dos mais diferencialmente expressos, envolvidos na regulação do crescimento celular. O lítio impede a formação de *inositol*, sendo responsável pelo aumento de *Ca+* e *Na+* no citoplasma neuronal, que por sua vez, nesta doença, aumenta o período refratário e a libertação de neurotransmissores, controlando assim, os sintomas. Assim, havendo um aumento destes iões no citoplasma dos neurónios há, consequentemente, um aumento destes. Isto pode ser uma explicação para de o termo *GO* mais presente, dentro dos genes mais diferencialmente expressos, estar associado à regulação do crescimento celular, podendo isto ser um indício da influência do lítio na expressão dos genes.
+</p>
+
 ID de GO | *p-value* | Contagens de Termos GO | Termos
-------------- | ------------- | ------------- | ------------- 
+------------- | ------------- | ------------- | -------------
 GO-0042045 | 0.004056914 | 2 | epithelial fluid transport
 GO-0006826 | 0.005561774 | 3 | iron ion transport
 GO-0006901 | 0.005561774 | 3 | vesicle coating
@@ -345,14 +369,14 @@ GO-0001825 | 0.006003791 | 2 | blastocyst formation
 GO-0048199 | 0.006506969 | 3 | vesicle targeting, to, from or within Golgi
 GO-0090114 | 0.006506969 | 3 | COPII-coated vesicle budding
 GO-0006903 | 0.008669374 | 3 | vesicle targeting
-GO-0000183 | 0.010909296 | 2 | chromatin silencing at rDNA
 GO-0006626 | 0.008828329 | 4 | protein targeting to mitochondrion
+GO-0000183 | 0.010909296 | 2 | chromatin silencing at rDNA
 GO-0070633 | 0.010909296 | 2 | transepithelial transport
 GO-0051650 | 0.012615235 | 5 | establishment of vesicle localization
 GO-1903955 | 0.012618644 | 3 | positive regulation of protein targeting to mitochondrion
 GO-0040008 | 0.015025500 | 8 | regulation of growth
 
-Table: **Tabela 28931381248940** - Tabela com os 15 termos GO mais associados aos genes diferencialmente expressos no que diz respeito à distinção das amostras de controlo e lítio ao fim de 1 mês de tratamento.
+Table: **Tabela 35375573895** -  Tabela com os 15 termos GO mais associados aos genes diferencialmente expressos no que diz respeito à distinção das amostras de controlo e lítio ao fim de 1 mês de tratamento.
 
 ##Controlo x Lítio (*Baseline*)
 ```{r , fig.align = 'center', message = FALSE, warning = FALSE}
