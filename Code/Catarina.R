@@ -1,27 +1,37 @@
 ########## Relatório ############ 
 
 #******************carregar dados e visualizar os dados existentes**************************************
-install.packages("gplots")
-install.packages("dendextend")#para por por no heatmap nas linhas
-install.packages("dendextendRcpp")#para por por no heatmap nas linhas
-install.packages("d3heatmap")#para fazer o heatmap
+#install.packages("gplots")
+#install.packages("dendextend")#para por por no heatmap nas linhas
+#install.packages("dendextendRcpp")#para por por no heatmap nas linhas
+#install.packages("d3heatmap")#para fazer o heatmap
 source("http://bioconductor.org/biocLite.R")
 biocLite()
-biocLite("GEOquery")
-biocLite("limma")
-biocLite("genefilter")
+#biocLite("GEOquery")
+#biocLite("limma")
+#biocLite("genefilter")
 
-biocLite("hgu133a.db")
+#biocLite("hgu133a.db")
 library("hgu133a.db")
 #biocLite("hgu95av2.db")
 
-biocLite("illuminaHumanv4.db")
+#biocLite("GOstats")
+library(GOstats)
+#biocLite("illuminaHumanv4.db")
 
 library("illuminaHumanv4.db") #Get this library if you don't have
 
-biocLite("hgu133plus2.db")
-library("hgu133plus2.db")
+#biocLite("hgu133plus2.db")
+#library("hgu133plus2.db")
+#install.packages("stringr")
 
+#install.packages("ggplot2")
+#install.packages("ggdendro")
+
+library(ggplot2)
+library(ggdendro)
+
+library(stringr)
 library(Biobase) 
 library(GEOquery)
 library("hgu95av2.db")
@@ -114,8 +124,8 @@ exp_filtrado2=data[sds>=2*m,]
 
 
 #######Análise de expressão diferencial e Enriquecimento#######
-biocLite("affydata")
-biocLite("affy")
+#biocLite("affydata")
+#biocLite("affy")
 biocLite("affyPLM")
 library(affydata)
 library(affy)
@@ -187,6 +197,8 @@ geneFunction1=unlist(mget(nomes1, illuminaHumanv4GENENAME))
 geneFunction1
 
 
+
+
 #######Controlo x Litio (baseline)#########
 
 #Na seguinte tabela encontram-se os 25 genes com maior evidência estatística de expressão génica
@@ -249,6 +261,259 @@ geneNames4
 geneFunction4=unlist(mget(nomes4, illuminaHumanv4GENENAME))
 geneFunction4
 
+#####T-test para usar nos clustering
+test5=rowttests(normalized_exp_filtrado2,"agent")
+test5
+sign_pvalue5=test5$p.value<0.05
+sign_pvalue5
+
+######### Analise de Enriquecimento 
+
+#Funcao para ir buscar o ID do GO e o GO (gene ontology)
+processaMarixRegEx <- function(data)
+{
+  matrix=as.matrix(data)
+  names = c()
+  ontology = c()
+  index = 1
+  regEX = "GO:[0-9]+"
+  regexOnto = ".Ontology"
+  nomes = row.names(matrix)
+  for(i in 1:length(nomes)){
+    val_regex = str_extract(nomes[i],regEX)
+    if(!is.na(val_regex)){
+      val_ontology = str_extract(nomes[i],regexOnto)
+      if(!is.na(val_ontology)){
+        names[index] = (val_regex)
+        ontology[index] = (matrix[nomes[i],1])
+        index = index+1
+      }
+    }
+  }
+  new.df= data.frame(GO = names,Ontology = ontology)
+  return(new.df)
+}
+
+#Funcao para as contagens  de termos GO 
+processTable <- function(tabela,data)
+{
+  chaves=as.character(data)
+  names = c()
+  contadores = c()
+  for(i in 1:length(chaves)){
+    contador = tabela[chaves[i]]
+    names[i]=chaves[i]
+    contadores[i] = contador
+    
+  }
+  new.df= data.frame(
+    GO = names,
+    contadores = contadores)
+  return(new.df)
+}
+
+
+#####Para o ttest1 - Controlo x Lítio (1 mês de tratamento) - "agent"
+
+#2º titulo para o relatorio: 
+#Analise de enriquecimento para os genes diferencialmente expressos 
+#Após a realização do t-teste, procedemos à análise de enriquecimento a fim de obtermos os termos GO associados aos genes mais diferencialmente expressos.
+
+filtrados1 = featureNames(normalized_exp_filtrado2) 
+entrezID1= unlist(mget(filtrados1, illuminaHumanv4ENTREZID))  
+pvalue1= test1$p.value<0.01
+pvalFilt = normalized_exp_filtrado2[pvalue1,]
+entrezIdSel1 = unlist(mget(featureNames(pvalFilt), illuminaHumanv4ENTREZID))
+GO1 = new("GOHyperGParams", geneIds=entrezIdSel1, universeGeneIds=entrezID1, annotation="illuminaHumanv4.db", ontology="BP", pvalueCutoff=0.025, testDirection="over")
+GO1_= hyperGTest(GO1)#Lista de grupos com menores p-values (ordem crescente)
+summary(GO1_)
+
+#Legenda: 
+#Tabela com os 15 termos GO mais associados aos genes diferencialmente expressos no que diz respeito à distinção das amostras de controlo e lítio 
+#ao fim de 1 mês de tratamento. 
+
+#Na seguinte tabela, estão presentes os quinze termos GO com maior associação ao atributo "agent" (controlo/lítio), ao fim de 1 mês de tratamento. 
+#O termo mais presente é "regulation of growth", o que nos indica que há genes, dentro dos mais diferencialmente expressos, envolvidos na regulação
+#do crescimento celular. O lítio impede a formação de inositol, através da fosforilação de compostos, sendo responsável pelo aumento de Ca+ e Na+ no citoplasma neuronal, que por sua vez,
+#nesta doença, aumenta o período refratário e a libertação de neurotransmissores, controlando assim, os sintomas. Assim, havendo um aumento destes iões 
+#no citoplasma dos neurónios há, consequentemente, um aumento destes. Isto pode ser uma explicação para o facto de o termo GO mais presente, 
+#dentro dos genes mais diferencialmente expressos, estar associado à regulação do crescimento celular, podendo isto ser um indício da influência 
+#do lítio na expressão dos genes.  Livro Vera
+
+
+
+
+#####Baseline x 1 mês de tratamento (que respondem ao tratamento com lítio)########
+#2º titulo para o relatorio: 
+#Analise de enriquecimento para os genes diferencialmente expressos
+filtrados2 = featureNames(normalized_exp_filtrado2) 
+entrezID2= unlist(mget(filtrados2, illuminaHumanv4ENTREZID))  
+pvalue2= test3$p.value<0.01
+pvalFilt = normalized_exp_filtrado2[pvalue2,]
+entrezIdSel2 = unlist(mget(featureNames(pvalFilt), illuminaHumanv4ENTREZID))
+GO2 = new("GOHyperGParams", geneIds=entrezIdSel2, universeGeneIds=entrezID2, annotation="illuminaHumanv4.db", ontology="BP", pvalueCutoff=0.025, testDirection="over")
+GO2_= hyperGTest(GO2)#Lista de grupos com menores p-values (ordem crescente)
+summary(GO2_)
+
+#Legenda
+#Tabela com os 15 termos GO mais associados aos genes diferencialmente expressos no que diz respeito à distinção das amostras baseline e primeiro mês
+#de tratamento com lítio, em pacientes que responderam ao tratamento. 
+
+#Na seguinte tabela, estão presentes os quinze termos GO com maior associação ao atributo "time" (baseline/1 mês de tratamento), em pacientes que responderam ao tratamento. 
+#Sendo que nenhum dos termos se destacou no que diz respeito à contagem, não podemos tirar conclusões específicas sobre nenhum deles em particular. 
+#No entanto, os termos resultantes estão relacionados com a fosforilação de compostos ("protein kinase A signaling") e associados a neurotransmissores
+#("sequestering of neurotransmitter") e à regulação positiva da resposta humoral ("positive regulation of humoral immune response"). Estes resultados
+#vão de encontro ao que é pretendido no tratamento da doença bipolar. Deste modo, podemos prever que estes genes, de pacientes que respondem ao tratamento com lítio,
+#diferencialmente expressos nas condições de baseline e 1 mês de tratamento, estão relacionados com a resposta do organismo ao lítio.  Livro Vera
+
+#####Responde x Nao responde (1month e litio)########
+2º titulo para o relatorio: 
+#Analise de enriquecimento para os genes diferencialmente expressos
+filtrados3= featureNames(normalized_exp_filtrado2) 
+entrezID3= unlist(mget(filtrados3, illuminaHumanv4ENTREZID))  
+pvalue3= test4$p.value<0.01
+pvalFilt = normalized_exp_filtrado2[pvalue3,]
+entrezIdSel3 = unlist(mget(featureNames(pvalFilt), illuminaHumanv4ENTREZID))
+GO3 = new("GOHyperGParams", geneIds=entrezIdSel3, universeGeneIds=entrezID3, annotation="illuminaHumanv4.db", ontology="BP", pvalueCutoff=0.025, testDirection="over")
+GO3_= hyperGTest(GO3)#Lista de grupos com menores p-values (ordem crescente)
+summary(GO3_)
+
+#Legenda
+#Tabela com os 15 termos GO mais associados aos genes diferencialmente expressos no que diz respeito à distinção das amostras dos pacientes que 
+#respondem e não respondem ao tratamento no primeiro mês com lítio.
+
+#Na seguinte tabela, estão presentes os quinze termos GO com maior associação ao atributo "other" (responde/não responde),
+#em pacientes que foram tratados com lítio, ao fim de 1 mês.
+#Os termos mais presentes, dentro dos genes mais diferencialmente expressos é "negative regulation of cell proliferation" e "negative regulation of cell migration".
+#A descoberta da ocorrência de neurogénese (nascimento de novos neurónios) em cérebros adultos tem despoletado o interesse por estratégias de terapia 
+#celular para o tratamento de doenças associadas ao sistema neuronal. A neurogénese, no cérebro adulto, ocorre em duas áreas: (a) Zona Subgranular 
+#do hipocampo e (b) Zona Subventricular dos ventrículos laterais. 
+#A partir desses locais, os novos neurónios migram em direção aos seus alvos finais em outras áreas cerebrais onde se diferenciam e 
+#integram os circuitos locais. Diversos estudos têm mostrado que o tratamento farmacológico com lítio exerce efeitos sobre a neurogênese adulta, estimulando a sobrevivência e o 
+#amadurecimento de novos neurónios gerados no cérebro de roedores adultos. 
+#Assim, sendo que os genes com maior expressão diferencial, no que diz respeito a pacientes que responderam e não responderam ao tratamento com lítio,
+#estão associados à proliferação e migração celular, podemos prever que o lítio seja capaz de despoletar estes mecanismos celulares e, deste modo, 
+#controlar os sintomas da doença bipolar. 
+#Artigo manhoso mas que da muito jeito 
+
+#######CLUSTERING
+
+#Funções utilizadas no Clustering 
+
+#HeatMap
+heatMapAnalysis <- function(data,colors)
+{
+  Rowv = data %>% dist %>% hclust %>% as.dendrogram %>%
+    set("branches_k_color", k = 4) %>% set("branches_lwd", 4) %>% ladderize
+  Colv = data %>% t %>% dist %>% hclust %>% as.dendrogram %>%
+    set("branches_k_color", k = 2, value = colors) %>%
+    set("branches_lwd", 4) %>% ladderize
+  d3heatmap(data,  Colv = Colv, Rowv = Rowv)
+}
+
+#K-means 
+k_means <- function(data_clustering,Ncenters,legends,lables=c("","")){
+  #-> Kmeans  #Agent 
+  dataFrame=exprs(data_clustering)
+  km = kmeans(dataFrame, centers=Ncenters)  
+  #gr?fico para explicar os resultados anteriores
+  plot(dataFrame, col=km$cluster, pch=19, cex=2, xlab =lables[1], ylab=lables[2])
+  points(km$centers, col=1:2, pch=3, cex=3, lwd=3)
+  legend("topleft", legend = legends, cex = 1, pch = 19, col = 1:3)
+  
+}
+
+#No que diz respeito à análise de dados, construiram-se dois dendrogramas, um para o 
+#atributo "agent" e outro para o atributo "other", a fim de proceder ao estudo 
+#dos clusters correspondentes. Para tal, usou-se apenas os vinte e cinco genes mais diferencialmente
+#expressos do atributo dos respetivos metadados. A distância usada na obtenção
+#dos clusters foi a euclideana. 
+
+##Clustering associado ao agent 
+test_agent=rowttests(normalized_exp_filtrado2,"agent")
+sign_pvalue_agent=test_agent$p.value<0.01
+data_clustering = normalized_exp_filtrado2[sign_pvalue_agent][1:25]
+datacluster=exprs(data_clustering)
+nomes_agent=rownames(normalized_exp_filtrado2[sign_pvalue_agent])[1:25]
+clust_nomes_agent=unlist(mget(nomes_agent, illuminaHumanv4SYMBOL))
+
+#Colocar os nomes dos genes no clustering 
+rownames(datacluster) <- clust_nomes_agent
+
+#Euclideana
+dist_euc = dist(datacluster)
+cl.hier.complete <- hclust(dist_euc)
+plot(cl.hier.complete, xlab="Distância euclideana",ylab="Altura")
+
+#Usando os vinte e cinco genes com a maior diferença de expressão, obtidos na análise
+#de expressão diferencial deste atributo dos metadados, 
+#é possível agrupar as amostras em dois grupos, tal como seria de prever, através da distância 
+#entre os genes.
+
+#Uma  representação  gráfica  dos  dados  relacionada  com  o  clustering  
+#hierárquico  são os heatmaps.  
+#Esta permite  representar  os  dados  como  uma  imagem  onde  cada  valor  da  
+#matriz  de  dados  é  representado com uma célula cuja cor varia consoante o valor 
+#respetivo, num gradiente  de cores que pode ser configurado. Os heatmaps tipicamente 
+#incluem as árvores criadas  por  clustering  hierárquico  quer  ao  nível  das  
+#linhas,  quer  ao  nível  das  colunas  de  dados. [Profs]
+
+heatMapAnalysis(datacluster,c("orange", "blue")) #####Agent  
+
+#A partir dos resultados do heatmap, foi possível verificar que os nossos genes
+#se organizaram em dois clusters disitintos, tal como se observou no resultado do 
+#clustering hierárquico. Assim, é possível deduzir que os genes relativos a cada 
+#grupo, de controlo e de tratamento com lítio, apresentam, efetivamente, expressão 
+#diferencial. 
+
+k_means(data_clustering,2,c("Agent 1", "Agent 2")) ##Agent
+
+#O  problema  de  clustering  k-means  constitui  uma  das  possíveis  formulações  
+#do  clustering, onde o objetivo é o de minimizar a média do quadrado das distâncias 
+#de cada ponto  ao  centro  do  cluster  a  que  pertence. 
+#Assim, prevê-se que um dos grupos esteja mais intimamente ligado que outro. Isso pode também
+#observar-se no clustering hierárquico, tendo em consideração as distâncias euclideanas.
+
+
+
+##Clustering associado ao other
+test_other=rowttests(normalized_exp_filtrado2,"other")
+sign_pvalue_other=test_other$p.value<0.01
+data_clustering2 = normalized_exp_filtrado2[sign_pvalue_other][1:25]
+datacluster2=exprs(data_clustering2)
+nomes_other=rownames(normalized_exp_filtrado2[sign_pvalue_other])[1:25]
+clust_nomes_other=unlist(mget(nomes_other, illuminaHumanv4SYMBOL))
+
+#Colocar os nomes dos genes no clustering 
+rownames(datacluster2) <- clust_nomes_other
+
+#Euclideana ##Melhor Resultado
+dist_euc = dist(datacluster2)
+cl.hier.complete <- hclust(dist_euc)
+plot(cl.hier.complete, xlab="Distância euclideana",ylab="Altura")
+#Usando os vinte e cinco genes com a maior diferença de expressão, obtidos na análise
+#de expressão diferencial deste atributo dos metadados, 
+#é possível agrupar as amostras em dois grupos, tal como seria de prever, através da distância 
+#entre os genes.
+
+heatMapAnalysis(datacluster2,c("orange", "blue")) ####Other 
+
+#A partir dos resultados do heatmap, é possível verificar que a distribuição da 
+#expressão dos genes de cada um dos grupos não é tão homogénea como se a que se observa no heatmap
+#anterior. 
+#Assim, isto pode indiciar que dentro dos genes dos indivíduos que respondem ao tratamento
+#alguns deles podem expressar-se mais intensamente, participando, assim, mais de forma mais ativa
+#na resposta ao tratamento. 
+
+k_means(data_clustering2,2,c("Other 1", "Other 2")) ##Other 
+#Tal como se verifica no heatmap anterior, a expressão génica dentro dos grupos é
+#pouco homogénea o que sugere que nem todos os genes, que se expressam diferencialmente 
+#no que diz respeito a condições de resposta ao tratamento, tenham a mesma
+#participação na mesma, sendo previsível a existência de genes sub e sobrexpressos na resposta ao tratamento com lítio.
+
+
+
+
 #######POR NO FINAL######
 #Nos testes de hipóteses realizados concluímos que os genes com maiores diferenças estatísiticas significativas, obtidos para os t-test 
 #realizado para os diferentes tipos de tratamento, não foram os mesmos para diferentes tempos experimentais. Isto sugere que, apesar 
@@ -260,3 +525,5 @@ geneFunction4
 #Relativamente ao teste estatístico que diz respeito à comparação de individuos que respondem e não respondem após 1 mês de tratamento 
 #com lítio, os resultados insidem na possibilidade da resposta dos pacientes ao tratamento com lítio estar associada à regulação da expressão
 #de alguns genes tornando-os, assim possíveis alvos para aumentar a eficácia do tratamento. 
+
+

@@ -693,7 +693,7 @@ precision(knnResult.agent)
 ```
 
 > <p style = 'text-align: justify;'> 
-Aplicando o método de *k-vizinhos mais próximos* ao tipo de tratamento, obteve-se um modelo com precisão de aproximadamente **89%** para o tratamento controlo e **80%** para o  tratamento com adição de lítio, o que nos indica que o modelo permite fazer previsões com uma precisão bastante razoável para ambos os casos.
+Aplicando o método de *k-vizinhos mais próximos* ao tipo de tratamento, obteve-se um modelo com precisão de aproximadamente **`r precision(knnResult.agent)[1]`** para o tratamento controlo e **`r precision(knnResult.agent)[2]`** para o  tratamento com adição de lítio, o que nos indica que o modelo permite fazer previsões com uma precisão bastante razoável para ambos os casos.
 </p>
 
 **Previsão da resposta ao tratamento**
@@ -705,7 +705,7 @@ precision(knnResult.other)
 ```
 
 > <p style = 'text-align: justify;'>
-Aplicando o método de *k-vizinhos mais próximos* à resposta ao tratamento, obteve-se um modelo com precisão de **86%** para os pacientes que responderam ao tratamento e **74%** para  os pacientes que não responderam ao tratamento, indicando que o modelo permite fazer previsões com uma precisão bastante razoável para ambos os casos.
+Aplicando o método de *k-vizinhos mais próximos* à resposta ao tratamento, obteve-se um modelo com precisão de **`r precision(knnResult.other)[1]`** para os pacientes que responderam ao tratamento e **`r precision(knnResult.other)[2]`** para  os pacientes que não responderam ao tratamento, indicando que o modelo permite fazer previsões com uma precisão bastante razoável para ambos os casos.
 </p>
 
 ##*Regression Tree*
@@ -720,7 +720,7 @@ precision(treeResult.agent)
 ```
 
 > <p style = 'text-align: justify;'> 
-Aplicando o método das árvores de regressão à resposta ao tipo de tratamento, obteve-se um modelo com precisão de **52%** para o tratamento controlo e **43%** para o tratamento com adição de lítio, indicando que, em ambos os casos, o modelo não permite realizar previsões com confiança.
+Aplicando o método das árvores de regressão à resposta ao tipo de tratamento, obteve-se um modelo com precisão de **`r precision(treeResult.agent)[1]`** para o tratamento controlo e **`r precision(treeResult.agent)[2]`** para o tratamento com adição de lítio, indicando que, em ambos os casos, o modelo não permite realizar previsões com confiança.
 </p>
 
 **Previsão da resposta ao tratamento**
@@ -733,7 +733,7 @@ precision(treeResult.other)
 ```
 
 > <p style = 'text-align: justify;'> 
-Aplicando o método das árvores de regressão à resposta ao tratamento, obteve-se um modelo com precisão de **85%** para os pacientes que responderam ao tratamento e **36%** para  os pacientes que não responderam ao tratamento, indicando que o modelo permite fazer previsões com alguma precisão para os pacientes que responderam ao tratamento, mas com resultados menos fiáveis no caso do grupo da não-resposta.
+Aplicando o método das árvores de regressão à resposta ao tratamento, obteve-se um modelo com precisão de **`r precision(treeResult.other)[1]`** para os pacientes que responderam ao tratamento e **`r precision(treeResult.other)[2]`** para  os pacientes que não responderam ao tratamento, indicando que o modelo permite fazer previsões com alguma precisão para os pacientes que responderam ao tratamento, mas com resultados menos fiáveis no caso do grupo da não-resposta.
 </p>
 
 ##*Support Vector Machine*
@@ -748,7 +748,9 @@ precision(svmResult.agent)
 ```
 
 > <p style = 'text-align: justify;'> 
-Aplicando o método das *SVM* à resposta ao tipo de tratamento, obteve-se um modelo com precisão de **75%** para o tratamento controlo e **25%** para o tratamento com adição de lítio, isto é, a precisão é bastante razoável para o grupo de controlo mas muito má no caso do grupo tratado com o lítio.
+Aplicando o método das *SVM* à resposta ao tipo de tratamento, obteve-se um modelo com precisão de **`r precision(svmResult.agent)[1]`
+** para o tratamento controlo e **`r precision(svmResult.agent)[2]`
+** para o tratamento com adição de lítio, isto é, a precisão é bastante razoável para o grupo de controlo mas muito má no caso do grupo tratado com o lítio.
 </p>
 
 **Previsão da resposta ao tratamento**
@@ -761,7 +763,9 @@ precision(svmResult.other)
 ```
 
 > <p style = 'text-align: justify;'> 
-Aplicando o método das *SVM* à resposta à resposta ao tratamento, obteve-se um modelo com precisão de **96%** para os pacientes que não responderam ao tratamento e **23%** para os pacientes que responderam ao tratamento, indicando que o modelo permite fazer previsões excelentes para os pacientes que não responderam ao tratamento, mas com resultados muito pouco fiáveis no caso do grupo que respondeu ao tratamento.
+Aplicando o método das *SVM* à resposta à resposta ao tratamento, obteve-se um modelo com precisão de **`r precision(svmResult.other)[1]`
+** para os pacientes que não responderam ao tratamento e **`r precision(svmResult.other)[2]`
+** para os pacientes que responderam ao tratamento, indicando que o modelo permite fazer previsões excelentes para os pacientes que não responderam ao tratamento, mas com resultados muito pouco fiáveis no caso do grupo que respondeu ao tratamento.
 </p>
 
 #Conclusão

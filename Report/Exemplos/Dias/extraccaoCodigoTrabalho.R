@@ -88,6 +88,16 @@ g.genotype=featureNames(esetGDS4766.filtrado[p20.genotype])
 g.names.genotype=unlist(mget(g.genotype, hgu133plus2SYMBOL))
 
 
+#####Para o ttest1 - Controlo x Lítio (1 mês de tratamento) - "agent"
+
+#2º titulo para o relatorio: 
+#Analise de enriquecimento para os genes diferencialmente expressos 
+#Após a realização do t-teste, procedemos à análise de enriquecimento a fim de obtermos os termos GO associados aos genes mais diferencialmente expressos.
+########Tabela##########
+
+#Na seguinte tabela, estão presentes os quinze termos GO com maior associação ao atributo "agent" (controlo/lítio), ao fim de 1 mês de tratamento. 
+#O termo mais presente é "regulation of growth", 
+
 
 
 
