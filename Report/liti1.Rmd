@@ -1,5 +1,5 @@
 ---
-title: Extração Conheciento Bases Dados Biológicas
+title: Extração de Conheciento de Bases Dados Biológicas
    <br />Bipolar Disorder and Response to Lithium
 author: "Catarina Sousa pg32934 | Davide Lagoa pg31552 | João Silva a72023 <br /> José Morais pg32943 | Marta Moreno pg32847"
 date: '`r format(Sys.Date(), "%d-%m-%Y")`'
@@ -29,7 +29,7 @@ biocLite()
 #biocLite("affydata")
 #biocLite("affy")
 #biocLite("illuminaHumanv4.db")
-biocLite("GOstats")
+#biocLite("GOstats")
 
 library(Biobase) 
 library(GEOquery)
@@ -72,7 +72,7 @@ gds <- getGEO('GDS5393', destdir=".")
 ```
 
 > <p style = 'text-align: justify;'>
-Conversão do *DataSet* para um *expressionset*:
+Conversão do *DataSet* para um *ExpressionSet*:
 </p>
 
 ```{r expressionset, message = FALSE, warning = FALSE, dependson = "dataset"}
@@ -87,7 +87,7 @@ dim(data)
 ```
 
 > <p style = 'text-align: justify;'>
-Conversão do *DataSet* para uma matiz numérica, contendo as *samples* nas colunas e *features* nas linhas: 
+Conversão do *DataSet* para uma matiz numérica, contendo as *samples* nas colunas e as *features* nas linhas: 
 </p>
 ```{r , message = FALSE}
 exp = exprs(data)
@@ -96,7 +96,7 @@ exp[5:15,1:5]
 ```
 
 > <p style = 'text-align: justify;'>
-Fazendo um boxplot com o logaritmo de base 2 dos dados de expressão para todas as amostras facilmente verificamos a escala e distribuição dos dados. As caixas apresentam forma e centro semelhantes entre amostras, indicando que os dados de expressão já estão normalizados,no entanto não podem ser diretamente utilizados na análise pois ainda possuem valores omissos.
+Fazendo um boxplot com o logaritmo de base 2 dos dados de expressão para todas as amostras facilmente verificamos a escala e distribuição dos dados a analisar. As caixas apresentam forma e centro muito distintas entre as amostras, indicando que os dados de expressão não estão normalizados. Posto isto é necessário proceder à sua filtragem e normalização.
 </p>
 
 ```{r boxplot, fig.width = 10, fig.align = 'center',  message = FALSE, warning = FALSE}
@@ -112,13 +112,13 @@ plot(im,axes=FALSE)
 
 ##Metadados
 
-> <p style = 'text-align: justify;'> Resumo do conteudo do *DataSet:* 
+> <p style = 'text-align: justify;'> Resumo do conteúdo do *DataSet:* 
 </p>
 
 ```{r , message = FALSE, warning = FALSE, dependson = "dataset"}
 abstract(data)
 ```
-> <p style = 'text-align: justify;'> Exemplo  pare verificar o nome de algumas das amostras e identificadores dos genes:
+> <p style = 'text-align: justify;'> Exemplo  para verificar o nome de algumas das amostras e identificadores dos genes:
 </p>
 
 ```{r , message = FALSE, warning = FALSE, dependson = "dataset"}
@@ -159,7 +159,7 @@ sample | Amostras Disponíveis  | 120 | "GSM1105438" "GSM1105486"...
 agent | Tipo de Tratamento | 2 |  "control" "lithium"
 other| Resposta ao Tratamento | 2 | "non-responder" "responder"
 individual | Indivíduos em Análise  | 60 | "Li+OPT_1" "Li+OPT_10"...
-description | Descrição do Sample | 120 | NULL
+description | Descrição da amostra | 120 | NULL
 time |  Momento em que foi obtida a amostra  | 2 | "1 month" "baseline"
 
 Table: **Tabela 1** - Informação contida no *DataSet* utilizado.
@@ -182,7 +182,7 @@ addmargins(table(data$agent,data$other))
 ```
 ##Tratamento dos Dados
 > <p style = 'text-align: justify;'>
-Verificar a existência registos com valores omissos (*NA*) no *DataSet* :
+Verificação da existência de registos com valores omissos (*NA*) no *DataSet* :
 </p>
 
 ```{r NAs, message = FALSE, warning = FALSE}
@@ -198,17 +198,17 @@ exp_complete=na.exclude(exp)
 dim(exp_complete)
 ```
 > <p style = 'text-align: justify;'>
-Removendo os casos imcompletos verificamos, que como era suposto, a dimensão do *DataSet* foi reduzido para 784.
+Removendo os casos incompletos verificamos que, como era suposto, a dimensão do *DataSet* foi reduzida para 47323.
 </p>
 > <p style = 'text-align: justify;'>
-Para verificar se os nossos dados seguiam uma distribuição normal (0,1), calculámos a média e desvio padrão dos dados do nosso 
+Para verificar se os dados seguiam uma distribuição normal (0,1), calculámos a média e desvio padrão dos dados do nosso 
 *DataSet* com os seguintes comandos: 
 </p>
 ```{r , message = FALSE, warning = FALSE}
 c(mean(exp_complete),sd(exp_complete))
 ```
 > <p style = 'text-align: justify;'>
-Com isto verificamos que os nosso dados não seguem uma distribuição normal (0,1). Pelo que se torna necessário normalizar-los recorrendo aos seguintes comandos: 
+Com isto verificamos que os dados não seguem uma distribuição normal (0,1). Pelo que se torna necessário normalizá-los recorrendo aos seguintes comandos: 
 </p>
 
 ```{r , message = FALSE, warning = FALSE}
@@ -216,11 +216,11 @@ exp_norm=scale(exp_complete)
 c(mean(exp_norm),sd(exp_norm))
 ```
 > <p style = 'text-align: justify;'>
-Agora os nosso dados seguem aproximadamente uma distribuição normal (0,1), pelo que a partir de agora serão estes os dados a utilizar.
+Agora os nosso dados seguem aproximadamente uma distribuição normal (0,1), pelo que todas as análises posteriores serão feitas com base nos dados normalizados.
 </p>
 
 > <p style = 'text-align: justify;'>
-De seguida, procurou-se remover os genes que possuiam valores pouco dispares ao longo das amostras, uma vez que não apresentam variabilidade significante para a distinção dos grupos amostrais. Para tal, procedeu-se seleção dos genes cujo desvio padrão dos valores de expressão ao longo das amostras è duas vezes superior do que a mediana dos desvios padrão de todos os genes.
+De seguida, procurou-se remover os genes que possuíam valores pouco dispares ao longo das amostras, uma vez que não apresentam variabilidade significante para a distinção dos grupos amostrais. Para tal, procedeu-se à seleção dos genes cujo desvio padrão dos valores de expressão ao longo das amostras é duas vezes superior à mediana do desvio padrão de todos os genes.
 </p>
 
 ```{r , fig.align = 'center', message = FALSE, warning = FALSE}
@@ -232,7 +232,7 @@ exp_filtrado=exp_complete[sds>=2*m,]
 dim(exp_filtrado)
 ```
 > <p style = 'text-align: justify;'>
-Com este passo, reduziu-se os dados a utilizar nos seguintes passos para 7671 features.
+Com este passo, reduziu-se os dados a utilizar nos passos seguintes para 7671 features.
 </p>
 
 ```{r , fig.align = 'center', message = FALSE, warning = FALSE}
@@ -248,7 +248,7 @@ exp_filtrado2=data[sds>=2*m,]
 ```
 
 > <p style = 'text-align: justify;'>
-Para realizarmos testes de hipóteses paramétricos (t-test) foi necessário normalizar o *ExpressionSet* (exp_filtrado2) utilizado, mantendo os filtros (remoção de valores omissos e aplicação de filtros *"Flat Patterns"*). Para tal efeito foi preciso desenvolver a seguinte função responsável por dado um *ExpressionSet* com casso omissos e os nomes das colunas da matriz a este correpondente sem valores omissos.
+Para realizarmos testes de hipóteses paramétricos (*t-test*) foi necessário normalizar o *ExpressionSet* (exp_filtrado2) utilizado, mantendo os filtros (remoção de valores omissos e aplicação de filtros *"Flat Patterns"*). Para tal, foi desenvolvida uma função que recebe um *ExpressionSet* com valores omissos, e uma lista com os nomes das linhas da matriz (que serão convertidos em índices), devolvendo um ExpressionSet sem os valores omissos.
 </p>
 ```{r funcao, fig.align = 'center', message = FALSE, warning = FALSE}
 getFromExpression <- function(expressionFonte,valuesOK)
@@ -280,7 +280,7 @@ normalized_exp_filtrado2=ExpressionSet(assayData = exp_filtrado2_matrix, phenoDa
 c(mean(exprs(normalized_exp_filtrado2)),sd(exprs(normalized_exp_filtrado2)),sum(is.na(exprs(normalized_exp_filtrado2))))
 ```
 > <p style = 'text-align: justify;'>
-O código acima apresentado é resposável pela remoção dos valores omissos e normalização do *ExpressionSet*, a ser utilizado nos restantes passos, como é possivel verificar através dos valores da média e desvido padrão, assimcomo o número de valores omissos no *output* do último comando executado.
+O código acima apresentado, como é possivel verificar no *output* do último comando executado, é resposável pela remoção dos valores omissos e normalização do *ExpressionSet* a ser utilizado nos restantes passos.
 </p>
 
 #Análise de Expressão Diferencial e de Enriquecimento
@@ -301,8 +301,7 @@ geneFunction1=unlist(mget(nomes1, illuminaHumanv4GENENAME))
 ```
 
 > <p style = 'text-align: justify;'>
-Na seguinte tabela encontram-se os 25 genes com maior evidência estatística de expressão génica diferencial no que diz respeito ao atributo "agent". Este teste foi feito com o intuito de perceber se, após 1 mês de tratamento em questão (com lítio), existem diferenças estatisticamente
-significativas na expressão dos genes. De facto, constatou-se que respectivos p-values (p-values < 0.01) permitem rejeitar a hipótese nula, pelo
+Na seguinte tabela encontram-se os 25 genes com maior evidência estatística de expressão génica diferencial no que diz respeito ao atributo "agent". Este teste foi feito com o intuito de perceber se, após 1 mês do tratamento em questão (com lítio), existem diferenças estatisticamente significativas na expressão dos genes. De facto, constatou-se que os  respectivos *p-values* (*p-values* < 0.01) permitem rejeitar a hipótese nula, pelo
 que podemos assumir que os genes das amostras em condição de controlo e condição de tratamento com lítio são diferencialmente expressos. Numa primeira análise, isto pode indiciar uma influencia do lítio na expressão destes genes.
 </p>
 
@@ -334,12 +333,12 @@ SP140L | ILMN_1658858|2.211787e-03|SP140 nuclear body protein like
 PTH | ILMN_2202048 |2.467427e-03|parathyroid hormone
 NA | ILMN_1898268|2.518019e-03|NA
 
-Table: **Tabela 2928936825983** -  Os 25 Genes com maior expressão diferencial no teste estatístico entre os grupos Controlo e Lítio após 1 mês de tratamento.
+Table: **Tabela 2** -  Os 25 Genes com maior expressão diferencial no teste estatístico entre os grupos Controlo e Lítio após 1 mês de tratamento.
 
-**Analise de enriquecimento para os genes diferencialmente expressos**
+**Análise de enriquecimento para os genes diferencialmente expressos**
 
 > <p style = 'text-align: justify;'>
-Após a realização do *t-teste*, procedemos à análise de enriquecimento a fim de obtermos os termos GO associados aos genes mais diferencialmente expressos.
+Após a realização do *t-teste*, procedeu-se à análise de enriquecimento a fim de obtermos os termos GO associados aos genes mais diferencialmente expressos.
 </p>
 
 
@@ -355,7 +354,7 @@ GO1_= hyperGTest(GO1)
 
  
 > <p style = 'text-align: justify;'>
-Na seguinte tabela, estão presentes os quinze termos *GO* com maior associação ao atributo *agent* (controlo/lítio), ao fim de 1 mês de tratamento. O termo mais presente é *regulation of growth*, o que nos indica que há genes, dentro dos mais diferencialmente expressos, envolvidos na regulação do crescimento celular. O lítio impede a formação de *inositol*, sendo responsável pelo aumento de *Ca+* e *Na+* no citoplasma neuronal, que por sua vez, nesta doença, aumenta o período refratário e a libertação de neurotransmissores, controlando assim, os sintomas. Assim, havendo um aumento destes iões no citoplasma dos neurónios há, consequentemente, um aumento destes. Isto pode ser uma explicação para de o termo *GO* mais presente, dentro dos genes mais diferencialmente expressos, estar associado à regulação do crescimento celular, podendo isto ser um indício da influência do lítio na expressão dos genes.
+Na seguinte tabela, estão presentes os quinze termos *GO* com maior associação ao atributo *agent* (controlo/lítio), ao fim de 1 mês de tratamento. O termo mais presente é *regulation of growth*, o que nos indica que há genes, dentro dos mais diferencialmente expressos, envolvidos na regulação do crescimento celular. O lítio impede a formação de *inositol*, sendo responsável pelo aumento de *Ca+* e *Na+* no citoplasma neuronal, que por sua vez, nesta doença, aumenta o período refratário e a libertação de neurotransmissores, controlando assim os sintomas. Assim, havendo um aumento destes iões no citoplasma dos neurónios há, consequentemente, um aumento destes. Isto pode ser uma explicação para o termo *GO* mais presente, dentro dos genes mais diferencialmente expressos, estar associado à regulação do crescimento celular, podendo isto ser um indício da influência do lítio na expressão dos genes.
 </p>
 
 ID de GO | *p-value* | Contagens de Termos GO | Termos
@@ -376,7 +375,7 @@ GO-0051650 | 0.012615235 | 5 | establishment of vesicle localization
 GO-1903955 | 0.012618644 | 3 | positive regulation of protein targeting to mitochondrion
 GO-0040008 | 0.015025500 | 8 | regulation of growth
 
-Table: **Tabela 35375573895** -  Tabela com os 15 termos GO mais associados aos genes diferencialmente expressos no que diz respeito à distinção das amostras de controlo e lítio ao fim de 1 mês de tratamento.
+Table: **Tabela 3** -  Tabela com os 15 termos GO mais associados aos genes diferencialmente expressos no que diz respeito à distinção das amostras de controlo e lítio ao fim de 1 mês de tratamento.
 
 ##Controlo x Lítio (*Baseline*)
 ```{r , fig.align = 'center', message = FALSE, warning = FALSE}
@@ -389,7 +388,7 @@ geneFunction2=unlist(mget(nomes2, illuminaHumanv4GENENAME))
 ```
 
 > <p style = 'text-align: justify;'>
-Na seguinte tabela encontram-se os 25 genes com maior evidência estatística de expressão génica diferencial no que diz respeito ao atributo *agent*. Este teste foi feito com o intuito de perceber se existem diferenças estatisticamente significativas na expressão dos genes no início da experiência. De facto, constatou-se que respectivos *p-values* (p-values < 0.01) permitem rejeitar a hipótese nula, pelo que podemos assumir que os genes das amostras em condição de controlo e condição de tratamento com lítio no ínicio do estudo são diferencialmente expressos. Numa primeira análise, isto pode indiciar uma influência do lítio na expressão destes genes. Tendo em conta os genes que obtivemos na tabela anterior, relativos a 1 mês de tratamento, podemos verificar que estes não são os mesmos obtidos na tabela seguinte. Estes resultados suportam a hipótese de que os genes obtidos na tabela anterior possam ser, de facto, influenciados ao nível da sua expressão pelo tratamento com lítio, uma vez que estes não apresentavam a maior diferença de expressão, comparativamente a outros genes, no início da experiência. 
+Na seguinte tabela encontram-se os 25 genes com maior evidência estatística de expressão génica diferencial no que diz respeito ao atributo *agent*. Este teste foi feito com o intuito de perceber se existem diferenças estatisticamente significativas na expressão dos genes no início da experiência. De facto, constatou-se que os respectivos *p-values* (p-values < 0.01) permitem rejeitar a hipótese nula, pelo que podemos assumir que os genes das amostras em condição de controlo e condição de tratamento com lítio no ínicio do estudo são diferencialmente expressos. Numa primeira análise, isto pode indiciar uma influência do lítio na expressão destes genes, tendo em conta que os genes que obtivemos na tabela anterior, relativos a 1 mês de tratamento, não são os mesmos obtidos nesta tabela (Tabela 4). Estes resultados suportam a hipótese de que os genes obtidos na tabela anterior possam ser, de facto, influenciados ao nível da sua expressão pelo tratamento com lítio, uma vez que estes não apresentavam a maior diferença de expressão, comparativamente a outros genes, no início da experiência. 
 </p>
 
 Nome do Gene | Nome da Variável | *p-value* | Função do Gene 
@@ -420,7 +419,7 @@ RFX3|ILMN_1779488|1.576887e-03|regulatory factor X3
 NA|ILMN_1721926|1.669918e-03| NA
 LAMP3|ILMN_2170813|1.823372e-03|lysosomal associated membrane protein 3
 
-Table: **Tabela 3** - Os 25 Genes com maior expressão diferencial no teste estatístico entre os grupos de Controlo e Lítio no instante incial.
+Table: **Tabela 4** - Os 25 Genes com maior expressão diferencial no teste estatístico entre os grupos de Controlo e Lítio no instante inicial.
 
 ##*Baseline* x 1 mês de tratamento (respondem ao tratamento com lítio)
 
@@ -434,7 +433,7 @@ geneFunction3=unlist(mget(nomes3, illuminaHumanv4GENENAME))
 ```
 
 > <p style = 'text-align: justify;'>
-Na seguinte tabela encontram-se os genes com maior evidência estatística de expressão génica diferencial no que diz respeito ao atributo *time* nas condições de resposta e tratamento com lítio. Este teste foi feito com o intuito de perceber, dentro dos indivíduos que foram tratados com lítio e responderam ao tratamento, quais os genes que após 1 mês do tratamento em questão (com lítio) apresentavam diferenças de expressão estatisticamente significativas relativamente à condição inicial (baseline). De facto, constatou-se que respectivos *p-values* (*p-values* < 0.01) permitem rejeitar a hipótese nula, pelo que podemos assumir que os genes dos indivíduos que foram tratados com lítio e responderam ao tratamento são diferencialmente expressos no inicío do tratamento e após um mês do começo do mesmo. 
+Na seguinte tabela encontram-se os genes com maior evidência estatística de expressão génica diferencial no que diz respeito ao atributo *time* nas condições de resposta e tratamento com lítio. Este teste foi feito com o intuito de perceber, de entre os indivíduos que foram tratados com lítio e responderam ao tratamento, quais os genes que após 1 mês do tratamento em questão (com lítio) apresentavam diferenças de expressão estatisticamente significativas relativamente à condição inicial (*baseline*). De facto, constatou-se que os respectivos *p-values* (*p-values* < 0.01) permitem rejeitar a hipótese nula, pelo que podemos assumir que os genes dos indivíduos que foram tratados com lítio e responderam ao tratamento são diferencialmente expressos no inicío do tratamento e um mês após o começo do mesmo. 
 </p>
 
 Nome do Gene | Nome da Variável | *p-value* | Função do Gene 
@@ -445,12 +444,53 @@ CHM|ILMN_1709112|0.003880609|CHM, Rab escort protein 1
 COX15|ILMN_2292696|0.007911662|COX15, cytochrome c oxidase assembly homolog
 GTF2IRD2B|ILMN_2180997|0.009325567|GTF2I repeat domain containing 2B
 
-Table: **Tabela 4** - Os 5 Genes com maior expressão diferencial no teste estatístico entre os resultados no *baseline* e ao fim de 1 mês no grupo que respondeu ao tratamento.
+Table: **Tabela 5** - Os 5 Genes com maior expressão diferencial no teste estatístico entre os resultados no *baseline* e ao fim de 1 mês no grupo que respondeu ao tratamento.
+
+**Análise de enriquecimento para os genes diferencialmente expressos**
+
+> <p style = 'text-align: justify;'>
+Após a realização do *t-teste*, procedemos à análise de enriquecimento a fim de obtermos os termos GO associados aos genes mais diferencialmente expressos.
+</p>
+
+```{r , fig.align = 'center', message = FALSE, warning = FALSE}
+filtrados2 = featureNames(normalized_exp_filtrado2) 
+entrezID2= unlist(mget(filtrados2, illuminaHumanv4ENTREZID))  
+pvalue2= test3$p.value<0.01
+pvalFilt = normalized_exp_filtrado2[pvalue2,]
+entrezIdSel2 = unlist(mget(featureNames(pvalFilt), illuminaHumanv4ENTREZID))
+GO2 = new("GOHyperGParams", geneIds=entrezIdSel2, universeGeneIds=entrezID2, annotation="illuminaHumanv4.db", ontology="BP", pvalueCutoff=0.025, testDirection="over")
+GO2_= hyperGTest(GO2)
+
+```
+> <p style = 'text-align: justify;'>
+Na tabela seguinte estão presentes os quinze termos *GO* com maior associação ao atributo *time* (*baseline*/1 mês de tratamento), em pacientes que responderam ao tratamento. Sendo que nenhum dos termos se destacou no que diz respeito à contagem, não podemos tirar conclusões específicas sobre nenhum deles em particular. No entanto, os termos resultantes estão relacionados com a fosforilação de compostos (*protein kinase A signaling*) e associados a neurotransmissores (*sequestering of neurotransmitter*) e à regulação positiva da resposta humoral (*positive regulation of humoral immune response*). Estes resultados vão de encontro ao que é pretendido no tratamento da doença bipolar. Deste modo, podemos prever que estes genes, de pacientes que respondem ao tratamento com lítio, diferencialmente expressos nas condições de *baseline* e 1 mês de tratamento, estão relacionados com a resposta do organismo ao lítio.
+</p>
+
+
+ID de GO | *p-value* | Contagens de Termos GO | Termos
+------------- | ------------- | ------------- | -------------
+GO-0010737 | 0.001341132 | 2 | protein kinase A signaling
+GO-0006865 | 0.003537452 | 2 | amino acid transport
+GO-0015739 | 0.004326923 | 1 | sialic acid transport
+GO-0042137 | 0.004326923 | 1 | sequestering of neurotransmitter
+GO-0051389 | 0.004326923 | 1 | inactivation of MAPKK activity
+GO-0060478 | 0.004326923 | 1 | acrosomal vesicle exocytosis
+GO-0097401 | 0.004326923 | 1 | synaptic vesicle lumen acidification
+GO-1902511 | 0.004326923 | 1 | negative regulation of apoptotic DNA fragmentation
+GO-1903251 | 0.004326923 | 1 | multi-ciliated epithelial cell differentiation
+GO-1903625 | 0.004326923 | 1 | negative regulation of DNA catabolic process
+GO-2000507 | 0.004326923 | 1 | positive regulation of energy homeostasis
+GO-0015849 | 0.007634964 | 2 | organic acid transport
+GO-0002922 | 0.008636160 | 1 | positive regulation of humoral immune response
+GO-0051938 | 0.008636160 | 1 | L-glutamate import
+GO-0060467 | 0.008636160 | 1 | negative regulation of fertilization
+
+Table: **Tabela 6** -  Tabela com os 15 termos GO mais associados aos genes diferencialmente expressos no que diz respeito à distinção das amostras *baseline* e primeiro mês de tratamento com lítio, em pacientes que responderam ao tratamento. 
 
 ##Responde x Não responde (1 mês de Tratamento e Litio)
 
 > <p style = 'text-align: justify;'>
-Na seguinte tabela encontram-se os 25 genes com maior evidência estatística de expressão génica diferencial no que diz respeito ao atributo *other* após 1 mês de tratamento com lítio. Este teste foi feito com o intuito de perceber, dentro dos indivíduos que foram tratados com lítio durante 1 mês, quais os genes que apresentavam as maiores diferenças de expressão quando comparados os indivíduos que respondem e não respondem ao tratamento. A importância inside na possibilidade da resposta dos pacientes ao tratamento com lítio possa estar associada à regulação da expressão de alguns genes tornando-os, assim possíveis alvos para aumentar a eficácia do tratamento. 
+Na seguinte tabela encontram-se os 25 genes com maior evidência estatística de expressão génica diferencial no que diz respeito ao atributo *other* após 1 mês de tratamento com lítio. Este teste foi feito com o intuito de perceber, de entre os indivíduos que foram tratados com lítio durante 1 mês, quais os genes que apresentavam as maiores diferenças de expressão quando comparados os indivíduos que respondem e não respondem ao tratamento. A importância incide na possibilidade de que a resposta dos pacientes ao tratamento com lítio possa estar associada à regulação da expressão de alguns genes tornando-os, assim, possíveis alvos para aumentar a eficácia do tratamento.
 </p>
 
 ```{r , fig.align = 'center', message = FALSE, warning = FALSE}
@@ -490,7 +530,47 @@ CDC26|ILMN_2210837|2.729218e-03|cell division cycle 26
 STRADA|ILMN_2315694|2.899831e-03|STE20-related kinase adaptor alpha
 KIAA0355|ILMN_1765696|3.068808e-03| KIAA0355
 
-Table: **Tabela 5** - 25 Genes mais expressivos no teste estatístico entre os grupos de que responderam e não responderam após 1 mês de tratamento.
+Table: **Tabela 7** - 25 Genes mais expressivos no teste estatístico entre os grupos de que responderam e não responderam após 1 mês de tratamento.
+
+**Análise de enriquecimento para os genes diferencialmente expressos**
+
+> <p style = 'text-align: justify;'>
+Após a realização do *t-teste*, procedemos à análise de enriquecimento a fim de obtermos os termos GO associados aos genes mais diferencialmente expressos.
+</p>
+
+```{r , fig.align = 'center', message = FALSE, warning = FALSE}
+filtrados3= featureNames(normalized_exp_filtrado2) 
+entrezID3= unlist(mget(filtrados3, illuminaHumanv4ENTREZID))  
+pvalue3= test4$p.value<0.01
+pvalFilt = normalized_exp_filtrado2[pvalue3,]
+entrezIdSel3 = unlist(mget(featureNames(pvalFilt), illuminaHumanv4ENTREZID))
+GO3 = new("GOHyperGParams", geneIds=entrezIdSel3, universeGeneIds=entrezID3, annotation="illuminaHumanv4.db", ontology="BP", pvalueCutoff=0.025, testDirection="over")
+GO3_= hyperGTest(GO3)
+```
+
+> <p style = 'text-align: justify;'>
+Na seguinte tabela, estão presentes os quinze termos *GO* com maior associação ao atributo *other* (responde/não responde), em pacientes que foram tratados com lítio, ao fim de 1 mês. Os termos mais presentes, dentro dos genes mais diferencialmente expressos são *negative regulation of cell proliferation* e *negative regulation of cell migration*. A descoberta da ocorrência de neurogénese (nascimento de novos neurónios) em cérebros adultos tem despoletado o interesse por estratégias de terapia celular para o tratamento de doenças associadas ao sistema neuronal. A neurogénese no cérebro adulto ocorre em duas áreas: (a) Zona Subgranular do hipocampo e (b) Zona Subventricular dos ventrículos laterais. A partir desses locais, os novos neurónios migram em direção aos seus alvos finais em outras áreas cerebrais onde se diferenciam e integram os circuitos locais. Diversos estudos têm mostrado que o tratamento farmacológico com lítio exerce efeitos sobre a neurogénese adulta, estimulando a sobrevivência e o amadurecimento de novos neurónios gerados no cérebro de roedores adultos. Assim, sendo que os genes com maior expressão diferencial, no que diz respeito a pacientes que responderam e não responderam ao tratamento com lítio, estão associados à proliferação e migração celular, podemos prever que o lítio seja capaz de despoletar estes mecanismos celulares e, deste modo, controlar os sintomas da doença bipolar.
+</p>
+
+
+ID de GO | *p-value* | Contagens de Termos GO | Termos
+------------- | ------------- | ------------- | -------------
+GO-0008285 | 0.001755732 | 15 | negative regulation of cell proliferation
+GO-0001890 | 0.003145789 | 6 | placenta development
+GO-0016254 | 0.003783439 | 2 | preassembly of GPI anchor in ER membrane
+GO-0042511 | 0.003783439 | 2 | positive regulation of tyrosine phosphorylation of Stat1 protein
+GO-0080111 | 0.003783439 | 2 | DNA demethylation
+GO-0033013 | 0.004122555 | 4 | tetrapyrrole metabolic process
+GO-0030336 | 0.007006260 | 7 | negative regulation of cell migration
+GO-0035510 | 0.007387835 | 2 | DNA dealkylation
+GO-0042510 | 0.007387835 | 2 | regulation of tyrosine phosphorylation of Stat1 protein
+GO-0070989 | 0.007387835 | 2 | oxidative demethylation
+GO-0072538 | 0.007387835 | 2 | T-helper 17 type immune response
+GO-2000146 | 0.009015351 | 7 | negative regulation of cell motility
+GO-0030488 | 0.012022553 | 2 | tRNA methylation
+GO-0042508 | 0.012022553 | 2 | tyrosine phosphorylation of Stat1 protein
+
+Table: **Tabela 5655645** - Tabela com os 15 termos GO mais associados aos genes diferencialmente expressos no que diz respeito à distinção das amostras dos pacientes que respondem e não respondem ao tratamento no primeiro mês com lítio.
 
 #Clustering de Genes e Amostras
 
