@@ -93,6 +93,7 @@ dim(data)
 > <p style = 'text-align: justify;'>
 Conversão do *DataSet* para uma matiz numérica, contendo as *samples* nas colunas e as *features* nas linhas: 
 </p>
+
 ```{r , message = FALSE}
 exp = exprs(data)
 class(exp)
@@ -104,13 +105,9 @@ Fazendo um boxplot com o logaritmo de base 2 dos dados de expressão para todas 
 </p>
 
 ```{r boxplot, fig.width = 10, fig.align = 'center',  message = FALSE, warning = FALSE}
-#col = terrain.colors(length(pData(data)$sample), alpha = 0.6)
-#dataBox = log2(exp)
-#boxplot(dataBox, col = col, whiskcol = col, pch = 21, cex = 0.8, xlab = 'Amostras', ylab = 'Intensidades (log2)', notch = TRUE, frame = FALSE)
-#depois descomentar esta a usar a imagem para nao demorar tanto 
-library(imager)
-im<-load.image("Rplot.png")
-plot(im,axes=FALSE)
+col = terrain.colors(length(pData(data)$sample), alpha = 0.6)
+dataBox = log2(exp)
+boxplot(dataBox, col = col, whiskcol = col, pch = 21, cex = 0.8, xlab = 'Amostras', ylab = 'Intensidades (log2)', notch = TRUE, frame = FALSE)
 ```
 
 
@@ -132,9 +129,11 @@ featureNames(data)[1:8]
 
 > <p style = 'text-align: justify;'> De maneira a solidificar o nosso conhecimento sobre o *DataSet* em estudo é muito útil termos uma ideia dos atributos disponíveis. 
 </p>
+
 ```{r , message = FALSE, warning = FALSE, dependson = "dataset"}
 varMetadata(data)
 ```
+
 > <p style = 'text-align: justify;'> A execução do comando anterior permitiu identificar no nosso *DataSet* os seguintes atributos, sendo que nenhum deles apresenta descrição:
 </p>
 
@@ -184,6 +183,7 @@ addmargins(table(data_depois$agent,data_depois$other))
 ```{r , message = FALSE, warning = FALSE}
 addmargins(table(data$agent,data$other))
 ```
+
 ##Tratamento dos Dados
 > <p style = 'text-align: justify;'>
 Verificação da existência de registos com valores omissos (*NA*) no *DataSet* :
@@ -194,13 +194,16 @@ divisaoCI = c(sum(!complete.cases(exp)),sum(complete.cases(exp)))
 divisaoCI
 sum(divisaoCI)
 ```
+
 > <p style = 'text-align: justify;'>
 Com a execução dos comandos anteriores verificamos que existem um total de 784 registos incompletos no *DataSet* e 47323 registos completos, fazendo assim um total de 48107, como esperado. De forma a tornar possível a análise dos dados, procedeu-se à remoção dos valores omissos.  
 </p>
+
 ```{r , message = FALSE, warning = FALSE}
 exp_complete=na.exclude(exp)
 dim(exp_complete)
 ```
+
 > <p style = 'text-align: justify;'>
 Removendo os casos incompletos verificamos que, como era suposto, a dimensão do *DataSet* foi reduzida para 47323.
 </p>
@@ -208,9 +211,11 @@ Removendo os casos incompletos verificamos que, como era suposto, a dimensão do
 Para verificar se os dados seguiam uma distribuição normal (0,1), calculámos a média e desvio padrão dos dados do nosso 
 *DataSet* com os seguintes comandos: 
 </p>
+
 ```{r , message = FALSE, warning = FALSE}
 c(mean(exp_complete),sd(exp_complete))
 ```
+
 > <p style = 'text-align: justify;'>
 Com isto verificamos que os dados não seguem uma distribuição normal (0,1). Pelo que se torna necessário normalizá-los recorrendo aos seguintes comandos: 
 </p>
@@ -219,6 +224,7 @@ Com isto verificamos que os dados não seguem uma distribuição normal (0,1). P
 exp_norm=scale(exp_complete) 
 c(mean(exp_norm),sd(exp_norm))
 ```
+
 > <p style = 'text-align: justify;'>
 Agora os nosso dados seguem aproximadamente uma distribuição normal (0,1), pelo que todas as análises posteriores serão feitas com base nos dados normalizados.
 </p>
@@ -235,6 +241,7 @@ abline(v=m*2,col="red",lwd=4,lty=2)
 exp_filtrado=exp_complete[sds>=2*m,]
 dim(exp_filtrado)
 ```
+
 > <p style = 'text-align: justify;'>
 Com este passo, reduziu-se os dados a utilizar nos passos seguintes para 7671 features.
 </p>
@@ -254,6 +261,7 @@ exp_filtrado2=data[sds>=2*m,]
 > <p style = 'text-align: justify;'>
 Para realizarmos testes de hipóteses paramétricos (*t-test*) foi necessário normalizar o *ExpressionSet* (exp_filtrado2) utilizado, mantendo os filtros (remoção de valores omissos e aplicação de filtros *"Flat Patterns"*). Para tal, foi desenvolvida uma função que recebe um *ExpressionSet* com valores omissos, e uma lista com os nomes das linhas da matriz (que serão convertidos em índices), devolvendo um ExpressionSet sem os valores omissos.
 </p>
+
 ```{r funcao, fig.align = 'center', message = FALSE, warning = FALSE}
 getFromExpression <- function(expressionFonte,valuesOK)
 {
@@ -283,6 +291,7 @@ expData1=experimentData(exp_filtrado2)
 normalized_exp_filtrado2=ExpressionSet(assayData = exp_filtrado2_matrix, phenoData = phenoData1, featureData = featData1, experimentData = expData1)
 c(mean(exprs(normalized_exp_filtrado2)),sd(exprs(normalized_exp_filtrado2)),sum(is.na(exprs(normalized_exp_filtrado2))))
 ```
+
 > <p style = 'text-align: justify;'>
 O código acima apresentado, como é possivel verificar no *output* do último comando executado, é resposável pela remoção dos valores omissos e normalização do *ExpressionSet* a ser utilizado nos restantes passos.
 </p>
@@ -303,10 +312,14 @@ nomes1=rownames(pvalues1Signif)[1:25]
 geneNames1=unlist(mget(nomes1, illuminaHumanv4SYMBOL))
 geneFunction1=unlist(mget(nomes1, illuminaHumanv4GENENAME))
 ```
-[@illumina]
+
 > <p style = 'text-align: justify;'>
 Na seguinte tabela encontram-se os 25 genes com maior evidência estatística de expressão génica diferencial no que diz respeito ao atributo "agent". Este teste foi feito com o intuito de perceber se, após 1 mês do tratamento em questão (com lítio), existem diferenças estatisticamente significativas na expressão dos genes. De facto, constatou-se que os  respectivos *p-values* (*p-values* < 0.01) permitem rejeitar a hipótese nula, pelo
 que podemos assumir que os genes das amostras em condição de controlo e condição de tratamento com lítio são diferencialmente expressos. Numa primeira análise, isto pode indiciar uma influencia do lítio na expressão destes genes.
+</p>
+
+> <p style = 'text-align: justify;'>
+A informação referente aos nomes dos genes e respetivas funções presente nas seguintes tabelas foi obtida com recurso à *API* disponível para *R* para fazer análise com amostras recolhidas através da *Illumina* [@illumina].
 </p>
 
 Nome do Gene | Nome da Variável | *p-value* | Função do Gene 
@@ -358,7 +371,7 @@ GO1_= hyperGTest(GO1)
 
  
 > <p style = 'text-align: justify;'>
-Na seguinte tabela, estão presentes os quinze termos *GO* com maior associação ao atributo *agent* (controlo/lítio), ao fim de 1 mês de tratamento. O termo mais presente é *regulation of growth*, o que nos indica que há genes, dentro dos mais diferencialmente expressos, envolvidos na regulação do crescimento celular. O lítio impede a formação de *inositol*, sendo responsável pelo aumento de *Ca+* e *Na+* no citoplasma neuronal, que por sua vez, nesta doença, aumenta o período refratário e a libertação de neurotransmissores, controlando assim os sintomas. Assim, havendo um aumento destes iões no citoplasma dos neurónios há, consequentemente, um aumento destes. Isto pode ser uma explicação para o termo *GO* mais presente, dentro dos genes mais diferencialmente expressos, estar associado à regulação do crescimento celular, podendo isto ser um indício da influência do lítio na expressão dos genes.[@cellmolecularBio]
+Na seguinte tabela, estão presentes os quinze termos *GO* com maior associação ao atributo *agent* (controlo/lítio), ao fim de 1 mês de tratamento. O termo mais presente é *regulation of growth*, o que nos indica que há genes, dentro dos mais diferencialmente expressos, envolvidos na regulação do crescimento celular. O lítio impede a formação de *inositol*, sendo responsável pelo aumento de *Ca+* e *Na+* no citoplasma neuronal, que por sua vez, nesta doença, aumenta o período refratário e a libertação de neurotransmissores, controlando assim os sintomas. Assim, havendo um aumento destes iões no citoplasma dos neurónios há, consequentemente, um aumento destes. Isto pode ser uma explicação para o termo *GO* mais presente, dentro dos genes mais diferencialmente expressos, estar associado à regulação do crescimento celular, podendo isto ser um indício da influência do lítio na expressão dos genes [@cellmolecularBio].
 </p>
 
 ID de GO | *p-value* | Contagens de Termos GO | Termos
@@ -464,10 +477,10 @@ pvalFilt = normalized_exp_filtrado2[pvalue2,]
 entrezIdSel2 = unlist(mget(featureNames(pvalFilt), illuminaHumanv4ENTREZID))
 GO2 = new("GOHyperGParams", geneIds=entrezIdSel2, universeGeneIds=entrezID2, annotation="illuminaHumanv4.db", ontology="BP", pvalueCutoff=0.025, testDirection="over")
 GO2_= hyperGTest(GO2)
-
 ```
+
 > <p style = 'text-align: justify;'>
-Na tabela seguinte estão presentes os quinze termos *GO* com maior associação ao atributo *time* (*baseline*/1 mês de tratamento), em pacientes que responderam ao tratamento. Sendo que nenhum dos termos se destacou no que diz respeito à contagem, não podemos tirar conclusões específicas sobre nenhum deles em particular. No entanto, os termos resultantes estão relacionados com a fosforilação de compostos (*protein kinase A signaling*) e associados a neurotransmissores (*sequestering of neurotransmitter*) e à regulação positiva da resposta humoral (*positive regulation of humoral immune response*). Estes resultados vão de encontro ao que é pretendido no tratamento da doença bipolar. Deste modo, podemos prever que estes genes, de pacientes que respondem ao tratamento com lítio, diferencialmente expressos nas condições de *baseline* e 1 mês de tratamento, estão relacionados com a resposta do organismo ao lítio.[@cellmolecularBio]
+Na tabela seguinte estão presentes os quinze termos *GO* com maior associação ao atributo *time* (*baseline*/1 mês de tratamento), em pacientes que responderam ao tratamento. Sendo que nenhum dos termos se destacou no que diz respeito à contagem, não podemos tirar conclusões específicas sobre nenhum deles em particular. No entanto, os termos resultantes estão relacionados com a fosforilação de compostos (*protein kinase A signaling*) e associados a neurotransmissores (*sequestering of neurotransmitter*) e à regulação positiva da resposta humoral (*positive regulation of humoral immune response*). Estes resultados vão de encontro ao que é pretendido no tratamento da doença bipolar. Deste modo, podemos prever que estes genes, de pacientes que respondem ao tratamento com lítio, diferencialmente expressos nas condições de *baseline* e 1 mês de tratamento, estão relacionados com a resposta do organismo ao lítio [@cellmolecularBio].
 </p>
 
 
@@ -553,9 +566,8 @@ GO3_= hyperGTest(GO3)
 ```
 
 > <p style = 'text-align: justify;'>
-Na seguinte tabela, estão presentes os quinze termos *GO* com maior associação ao atributo *other* (responde/não responde), em pacientes que foram tratados com lítio, ao fim de 1 mês. Os termos mais presentes, dentro dos genes mais diferencialmente expressos são *negative regulation of cell proliferation* e *negative regulation of cell migration*. A descoberta da ocorrência de neurogénese (nascimento de novos neurónios) em cérebros adultos tem despoletado o interesse por estratégias de terapia celular para o tratamento de doenças associadas ao sistema neuronal. A neurogénese no cérebro adulto ocorre em duas áreas: (a) Zona Subgranular do hipocampo e (b) Zona Subventricular dos ventrículos laterais. A partir desses locais, os novos neurónios migram em direção aos seus alvos finais em outras áreas cerebrais onde se diferenciam e integram os circuitos locais. Diversos estudos têm mostrado que o tratamento farmacológico com lítio exerce efeitos sobre a neurogénese adulta, estimulando a sobrevivência e o amadurecimento de novos neurónios gerados no cérebro de roedores adultos. Assim, sendo que os genes com maior expressão diferencial, no que diz respeito a pacientes que responderam e não responderam ao tratamento com lítio, estão associados à proliferação e migração celular, podemos prever que o lítio seja capaz de despoletar estes mecanismos celulares e, deste modo, controlar os sintomas da doença bipolar.[@artigoLiti]
+Na seguinte tabela, estão presentes os quinze termos *GO* com maior associação ao atributo *other* (responde/não responde), em pacientes que foram tratados com lítio, ao fim de 1 mês. Os termos mais presentes, dentro dos genes mais diferencialmente expressos são *negative regulation of cell proliferation* e *negative regulation of cell migration*. A descoberta da ocorrência de neurogénese (nascimento de novos neurónios) em cérebros adultos tem despoletado o interesse por estratégias de terapia celular para o tratamento de doenças associadas ao sistema neuronal. A neurogénese no cérebro adulto ocorre em duas áreas: (a) Zona Subgranular do hipocampo e (b) Zona Subventricular dos ventrículos laterais. A partir desses locais, os novos neurónios migram em direção aos seus alvos finais em outras áreas cerebrais onde se diferenciam e integram os circuitos locais. Diversos estudos têm mostrado que o tratamento farmacológico com lítio exerce efeitos sobre a neurogénese adulta, estimulando a sobrevivência e o amadurecimento de novos neurónios gerados no cérebro de roedores adultos. Assim, sendo que os genes com maior expressão diferencial, no que diz respeito a pacientes que responderam e não responderam ao tratamento com lítio, estão associados à proliferação e migração celular, podemos prever que o lítio seja capaz de despoletar estes mecanismos celulares e, deste modo, controlar os sintomas da doença bipolar [@artigoLiti].
 </p>
-
 
 ID de GO | *p-value* | Contagens de Termos GO | Termos
 ------------- | ------------- | ------------- | -------------
@@ -621,7 +633,6 @@ plot(cl.hier.complete, xlab="Distância euclideana",ylab="Altura")
 
 > <p style = 'text-align: justify;'>
 Usando os vinte e cinco genes com a maior diferença de expressão, obtidos na análise de expressão diferencial deste atributo dos metadados, é possível agrupar as amostras em dois grupos, tal como seria de prever, através da distância entre os genes.
-
 </p>
 
 > <p style = 'text-align: justify;'>
@@ -670,7 +681,6 @@ heatMapAnalysis(datacluster2,c("orange", "blue"))
 > <p style = 'text-align: justify;'>
 A partir dos resultados do *heatmap*, é possível verificar que a distribuição da expressão dos genes de cada um dos grupos não é tão homogénea como se a que se observa no heatmap anterior. Assim, isto pode indiciar que dentro dos genes dos indivíduos que respondem ao tratamento alguns deles podem expressar-se mais intensamente, participando, assim, de forma mais ativa na resposta ao tratamento.
 </p>
-
 
 ```{r , fig.align = 'center', message = FALSE, warning = FALSE}
 k_means(data_clustering2,2,c("Other 1", "Other 2"))
@@ -726,8 +736,7 @@ Aplicando o método das árvores de regressão à resposta ao tipo de tratamento
 **Previsão da resposta ao tratamento**
 
 ```{r , fig.align = 'center', message = FALSE, warning = FALSE}
-treeResult.other = MLearn(other ~ ., normalized_exp_filtrado2, rpartI, 
-                          xvalSpec("LOG", 5, balKfold.xvspec(5)))
+treeResult.other = MLearn(other ~ ., normalized_exp_filtrado2, rpartI, xvalSpec("LOG", 5, balKfold.xvspec(5)))
 addmargins(confuMat(treeResult.other))
 precision(treeResult.other)
 ```
@@ -741,31 +750,25 @@ Aplicando o método das árvores de regressão à resposta ao tratamento, obteve
 **Previsão do tipo de tratamento**
 
 ```{r , fig.align = 'center', message = FALSE, warning = FALSE}
-svmResult.agent <- MLearn(agent~., normalized_exp_filtrado2, svmI,
-                          xvalSpec("LOG", 5, balKfold.xvspec(5)))
+svmResult.agent <- MLearn(agent~., normalized_exp_filtrado2, svmI, xvalSpec("LOG", 5, balKfold.xvspec(5)))
 addmargins(confuMat(svmResult.agent))
 precision(svmResult.agent)
 ```
 
 > <p style = 'text-align: justify;'> 
-Aplicando o método das *SVM* à resposta ao tipo de tratamento, obteve-se um modelo com precisão de **`r precision(svmResult.agent)[1]`
-** para o tratamento controlo e **`r precision(svmResult.agent)[2]`
-** para o tratamento com adição de lítio, isto é, a precisão é bastante razoável para o grupo de controlo mas muito má no caso do grupo tratado com o lítio.
+Aplicando o método das *SVM* à resposta ao tipo de tratamento, obteve-se um modelo com precisão de **`r precision(svmResult.agent)[1]`** para o tratamento controlo e **`r precision(svmResult.agent)[2]`** para o tratamento com adição de lítio, isto é, a precisão é bastante razoável para o grupo de controlo mas muito má no caso do grupo tratado com o lítio.
 </p>
 
 **Previsão da resposta ao tratamento**
 
 ```{r , fig.align = 'center', message = FALSE, warning = FALSE}
-svmResult.other = MLearn(other ~ ., normalized_exp_filtrado2, svmI,
-                         xvalSpec("LOG", 5, balKfold.xvspec(5)))
+svmResult.other = MLearn(other ~ ., normalized_exp_filtrado2, svmI, xvalSpec("LOG", 5, balKfold.xvspec(5)))
 addmargins(confuMat(svmResult.other))
 precision(svmResult.other)
 ```
 
 > <p style = 'text-align: justify;'> 
-Aplicando o método das *SVM* à resposta à resposta ao tratamento, obteve-se um modelo com precisão de **`r precision(svmResult.other)[1]`
-** para os pacientes que não responderam ao tratamento e **`r precision(svmResult.other)[2]`
-** para os pacientes que responderam ao tratamento, indicando que o modelo permite fazer previsões excelentes para os pacientes que não responderam ao tratamento, mas com resultados muito pouco fiáveis no caso do grupo que respondeu ao tratamento.
+Aplicando o método das *SVM* à resposta à resposta ao tratamento, obteve-se um modelo com precisão de **`r precision(svmResult.other)[1]`** para os pacientes que não responderam ao tratamento e **`r precision(svmResult.other)[2]`** para os pacientes que responderam ao tratamento, indicando que o modelo permite fazer previsões excelentes para os pacientes que não responderam ao tratamento, mas com resultados muito pouco fiáveis no caso do grupo que respondeu ao tratamento.
 </p>
 
 #Conclusão
